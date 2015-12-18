@@ -34,6 +34,8 @@ get live reloading, nor a REPL.
 
 ## License
 
-Copyright © 2014 FIXME
+Copyright © 2015 Nympass Co. Ltd.
 
-Distributed under the Eclipse Public License either version 1.0 or (at your option) any later version.
+Distributed under the Eclipse Public License version 1.0.
+
+Robip uses [Blockly](https://github.com/google/blockly) for visual programming, which is distributed under Apache License 2.0.
