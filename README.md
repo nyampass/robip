@@ -32,10 +32,15 @@ To create a production build run:
 And open your browser in `resources/public/index.html`. You will not
 get live reloading, nor a REPL. 
 
+## Credit
+
+Robip uses Blockly and BlocklyDuino for visual programming, which are both distributed under Apache License 2.0.
+
+- [Blockly](https://github.com/google/blockly)
+- [BlocklyDuino](https://github.com/BlocklyDuino/BlocklyDuino)
+
 ## License
 
 Copyright © 2015 Nympass Co. Ltd.
 
 Distributed under the Eclipse Public License version 1.0.
-
-Robip uses [Blockly](https://github.com/google/blockly) for visual programming, which is distributed under Apache License 2.0.
