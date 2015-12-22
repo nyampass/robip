@@ -1,0 +1,3 @@
+[submodule "lib/BlocklyDuino"]
+	path = lib/BlocklyDuino
+	url = git@github.com:BlocklyDuino/BlocklyDuino.git
