@@ -13,29 +13,7 @@
     <div id="blocklyDiv" style="height: 480px; width: 600px;"></div>
     <button id="codeGen" type="button">code gen</button>
     <textarea id="blocklyCode"></textarea>
-    <script src="js/blockly_compressed.js"></script>
-    <!-- Make surue to replace these JS with compressed one -->
-    <script src="js/blocks/base.js"></script>
-    <script src="js/blocks/colour.js"></script>
-    <script src="js/blocks/grove.js"></script>
-    <script src="js/blocks/lists.js"></script>
-    <script src="js/blocks/logic.js"></script>
-    <script src="js/blocks/loops.js"></script>
-    <script src="js/blocks/math.js"></script>
-    <script src="js/blocks/procedures.js"></script>
-    <script src="js/blocks/text.js"></script>
-    <script src="js/blocks/variables.js"></script>
-    <script src="js/generators/arduino.js"></script>
-    <script src="js/generators/arduino/base.js"></script>
-    <script src="js/generators/arduino/control.js"></script>
-    <script src="js/generators/arduino/grove.js"></script>
-    <script src="js/generators/arduino/logic.js"></script>
-    <script src="js/generators/arduino/math.js"></script>
-    <script src="js/generators/arduino/procedures.js"></script>
-    <script src="js/generators/arduino/text.js"></script>
-    <script src="js/generators/arduino/variables.js"></script>
-    <!-- end -->
-    <script src="js/msg/en.js"></script>
+    <script src="js/compiled/robip.js" type="text/javascript"></script>
     <xml id="toolbox" style="display: none">
       <block type="entry_point"></block>
       <block type="controls_if"></block>
@@ -47,16 +25,5 @@
       <block type="text_print"></block>
       <block type="inout_pin_mode"></block>
     </xml>
-    <script>
-      var workspace = Blockly.inject('blocklyDiv',
-      {toolbox: document.getElementById('toolbox')});
-      var button = document.getElementById('codeGen');
-      button.onclick = function (e) {
-        var codeArea = document.getElementById('blocklyCode');
-        var code = Blockly.Arduino.workspaceToCode(workspace);
-        codeArea.value = code;
-      };
-    </script>
-    <script src="/js/compiled/robip.js" type="text/javascript"></script>
   </body>
 </html>

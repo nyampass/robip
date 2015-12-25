@@ -1,23 +1,40 @@
 (ns robip.core
-  (:require [reagent.core :as reagent :refer [atom]]))
+  (:require-macros [reagent.ratom :refer [reaction]])
+  (:require [reagent.core :as reagent :refer [atom]]
+            [re-frame.core :as r]
+            [goog.events :as events]
+            [ajax.core :as ajax]
+            Blockly
+            Blockly.Variables
+            Blockly.inject
+            Blockly.utils
+            Blockly.Blocks.base
+            Blockly.Blocks.colour
+            Blockly.Blocks.grove
+            Blockly.Blocks.lists
+            Blockly.Blocks.logic
+            Blockly.Blocks.loops
+            Blockly.Blocks.math
+            Blockly.Blocks.procedures
+            Blockly.Blocks.texts
+            Blockly.Blocks.variables)
+  (:import [goog History]
+           [goog.history EventType]
+           Blockly.Arduino
+           Blockly.Msg))
 
 (enable-console-print!)
 
-(println "Edits to this text should show up in your developer console.")
+(r/register-handler
+ :init
+ (fn [_ _]
+   (let [workspace (Blockly.inject "blocklyDiv"
+                           #js{:toolbox (.getElementById js/document "toolbox")})]
+     workspace)))
 
-;; define your app data so that it doesn't get over-written on reload
+(defn ^:export main []
+  (println Blockly.Variables/NAME_TYPE)
+  (r/dispatch-sync [:init])
+  #_(reagent/render [menubar] (.getElementById js/document "app")))
 
-(defonce app-state (atom {:text "Hello world!"}))
-
-(defn hello-world []
-  [:h1 (:text @app-state)])
-
-(reagent/render-component [hello-world]
-                          (. js/document (getElementById "app")))
-
-
-(defn on-js-reload []
-  ;; optionally touch your app-state to force rerendering depending on
-  ;; your application
-  ;; (swap! app-state update-in [:__figwheel_counter] inc)
-)
+(set! (.-onload js/window) main)
