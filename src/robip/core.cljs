@@ -33,7 +33,6 @@
      workspace)))
 
 (defn ^:export main []
-  (println Blockly.Variables/NAME_TYPE)
   (r/dispatch-sync [:init])
   #_(reagent/render [menubar] (.getElementById js/document "app")))
 
