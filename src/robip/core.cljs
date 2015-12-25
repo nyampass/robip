@@ -8,6 +8,7 @@
             Blockly.Variables
             Blockly.inject
             Blockly.utils
+            Blockly.Msg.en
             Blockly.Blocks.base
             Blockly.Blocks.colour
             Blockly.Blocks.grove
@@ -20,8 +21,7 @@
             Blockly.Blocks.variables)
   (:import [goog History]
            [goog.history EventType]
-           Blockly.Arduino
-           Blockly.Msg))
+           Blockly.Arduino))
 
 (enable-console-print!)
 
