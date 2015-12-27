@@ -4,21 +4,8 @@
             [re-frame.core :as r]
             [goog.events :as events]
             [ajax.core :as ajax]
-            Blockly
-            Blockly.Variables
-            Blockly.inject
-            Blockly.utils
-            Blockly.Msg.en
-            Blockly.Blocks.base
-            Blockly.Blocks.colour
-            Blockly.Blocks.grove
-            Blockly.Blocks.lists
-            Blockly.Blocks.logic
-            Blockly.Blocks.loops
-            Blockly.Blocks.math
-            Blockly.Blocks.procedures
-            Blockly.Blocks.texts
-            Blockly.Blocks.variables)
+            robip.blockly
+            Blockly.inject)
   (:import [goog History]
            [goog.history EventType]
            Blockly.Arduino))
