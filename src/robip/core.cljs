@@ -15,8 +15,14 @@
 (r/register-handler
  :init
  (fn [_ _]
-   (let [workspace (Blockly.inject "blocklyDiv"
-                           #js{:toolbox (.getElementById js/document "toolbox")})]
+   (let [opts #js{:toolbox (.getElementById js/document "toolbox")}
+         workspace (Blockly.inject "blocklyDiv" opts)
+         button (.getElementById js/document "codeGen")]
+     (set! (.-onclick button)
+           (fn [e]
+             (let [code-area (.getElementById js/document "blocklyCode")
+                   code (.workspaceToCode Arduino workspace)]
+               (set! (.-value code-area) code))))
      workspace)))
 
 (defn ^:export main []
