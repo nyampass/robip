@@ -12,6 +12,7 @@
            Blockly.Arduino))
 
 (def cp (node/require "child_process"))
+(def request (node/require "request"))
 (def os (node/require "os"))
 (def fs (node/require "fs"))
 (def path (node/require "path"))
@@ -50,14 +51,13 @@
                             :params {:code code}))
              (download [[ok? result]]
                (when ok?
-                 (println "requesting" (:url result) "...")
-                 (api-request (:url result) write-file :format :raw)))
-             (write-file [[ok? result]]
-               (when ok?
-                 (println (type result))
+                 (request (str robip-server-uri (:url result))
+                          #js{:encoding nil}
+                          write-file)))
+             (write-file [err res body]
+               (when-not err
                  (let [path (-> (os.tmpdir) (path.join "firmware.bin"))]
-                   (println "writing binary content to" path)
-                   (fs.writeFile path result update))))
+                   (fs.writeFile path body update))))
              (update [err]
                (println "wrote up binary content to file!!"))]
        (set! (.-onclick (.getElementById js/document "build"))
