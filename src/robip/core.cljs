@@ -45,28 +45,55 @@
              (let [code-area (.getElementById js/document "blocklyCode")
                    code (.workspaceToCode Arduino workspace)]
                (set! (.-value code-area) code))))
-     (letfn [(build [code]
-               (api-request "/api/build" download
-                            :method :post
-                            :params {:code code}))
-             (download [[ok? result]]
-               (when ok?
-                 (request (str robip-server-uri (:url result))
-                          #js{:encoding nil}
-                          write-file)))
-             (write-file [err res body]
-               (when-not err
-                 (let [path (-> (os.tmpdir) (path.join "firmware.bin"))]
-                   (fs.writeFile path body update))))
-             (update [err]
-               (println "wrote up binary content to file!!"))]
-       (set! (.-onclick (.getElementById js/document "build"))
-             (fn [e] (build (.workspaceToCode Arduino workspace)))))
+     (set! (.-onclick (.getElementById js/document "build"))
+           (fn [e]
+             (let [code (.workspaceToCode Arduino workspace)]
+               (r/dispatch [:build code]))))
      (let [proc (cp.spawn "java" #js["-version"])]
        (.on (.-stderr proc)
             "data"
             (fn [data] (println (str data)))))
      workspace)))
+
+(r/register-handler
+ :build
+ [r/trim-v]
+ (fn [db [code]]
+   (api-request "/api/build"
+                (fn [[ok? result]]
+                  (if ok?
+                    (r/dispatch [:download-binary (:url result)])))
+                :method :post
+                :params {:code code})
+   db))
+
+(r/register-handler
+ :download-binary
+ [r/trim-v]
+ (fn [db [path]]
+   (request (str robip-server-uri path)
+            #js{:encoding nil}
+            (fn [err res body]
+              (when-not err
+                (r/dispatch [:write-to-file body]))))
+   db))
+
+(r/register-handler
+ :write-to-file
+ [r/trim-v]
+ (fn [db [content]]
+   (let [path (-> (os.tmpdir) (path.join "firmware.bin"))]
+     (fs.writeFile path content
+                   (fn [err]
+                     (when-not err (r/dispatch [:upload-to-device path])))))
+   db))
+
+(r/register-handler
+ :upload-to-device
+ [r/trim-v]
+ (fn [db [path]]
+   (println "wrote up binary content to" path "!!")
+   db))
 
 (defn ^:export main []
   (r/dispatch-sync [:init])
