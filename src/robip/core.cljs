@@ -4,11 +4,14 @@
             [re-frame.core :as r]
             [goog.events :as events]
             [ajax.core :as ajax]
+            [cljs.nodejs :as node]
             robip.blockly
             Blockly.inject)
   (:import [goog History]
            [goog.history EventType]
            Blockly.Arduino))
+
+(def child-process (node/require "child_process"))
 
 (enable-console-print!)
 
@@ -23,6 +26,10 @@
              (let [code-area (.getElementById js/document "blocklyCode")
                    code (.workspaceToCode Arduino workspace)]
                (set! (.-value code-area) code))))
+     (let [proc (.spawn child-process "java" #js["-version"])]
+       (.on (.-stderr proc)
+            "data"
+            (fn [data] (println (str data)))))
      workspace)))
 
 (defn ^:export main []
