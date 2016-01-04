@@ -19,6 +19,8 @@
 
 (def robip-server-uri "http://127.0.0.1:3000")
 
+(def port-name "/dev/tty.usbserial-DA01LW3C")
+
 (enable-console-print!)
 
 (defn api-request [path callback & opts]
@@ -49,10 +51,6 @@
            (fn [e]
              (let [code (.workspaceToCode Arduino workspace)]
                (r/dispatch [:build code]))))
-     (let [proc (cp.spawn "java" #js["-version"])]
-       (.on (.-stderr proc)
-            "data"
-            (fn [data] (println (str data)))))
      workspace)))
 
 (r/register-handler
@@ -91,8 +89,21 @@
 (r/register-handler
  :upload-to-device
  [r/trim-v]
- (fn [db [path]]
-   (println "wrote up binary content to" path "!!")
+ (fn [db [file-path]]
+   (let [lib-path (path.join "lib" "robip-tool" "robip-tool.jar")
+         proc (->> #js["-jar" lib-path "-p" port-name "0" file-path]
+                   (cp.spawn "java"))]
+     (.on proc "exit"
+          (fn [code signal]
+            (r/dispatch [:upload-complete])))
+     (.on (.-stderr proc) "data"
+          (fn [data] (println (str data)))))
+   db))
+
+(r/register-handler
+ :upload-complete
+ (fn [db _]
+   (println "upload completed")
    db))
 
 (defn ^:export main []
