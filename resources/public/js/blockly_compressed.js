@@ -1,1 +1,0 @@
-../../../lib/BlocklyDuino/blockly/blockly_compressed.js
