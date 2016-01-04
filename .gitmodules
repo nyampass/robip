@@ -1,0 +1,3 @@
+[submodule "lib/robip-tool"]
+	path = lib/robip-tool
+	url = git@github.com:nyampass/robip-tool.git
