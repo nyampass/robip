@@ -95,7 +95,8 @@
                    (cp.spawn "java"))]
      (.on proc "exit"
           (fn [code signal]
-            (r/dispatch [:upload-complete])))
+            (if (= code 0)
+              (r/dispatch [:upload-complete]))))
      (.on (.-stderr proc) "data"
           (fn [data] (println (str data)))))
    db))
