@@ -23,6 +23,9 @@
 
 (enable-console-print!)
 
+(defn error [msg]
+  (js/alert (str "ERROR: " msg)))
+
 (defn api-request [path callback & opts]
   (let [{:keys [method params format] :or {method :get}} opts
         format (case format
@@ -45,13 +48,23 @@
      {:workspace workspace :build-progress :done})))
 
 (r/register-handler
+ :report-error
+ [r/trim-v]
+ (fn [db [msg]]
+   (error msg)
+   (if (not= (:build-progress db) :done)
+     (assoc db :build-progress :done)
+     db)))
+
+(r/register-handler
  :build
  [r/trim-v]
  (fn [db [code]]
    (api-request "/api/build"
                 (fn [[ok? result]]
                   (if ok?
-                    (r/dispatch [:download-binary (:url result)])))
+                    (r/dispatch [:download-binary (:url result)])
+                    (r/dispatch [:report-error "build failed"])))
                 :method :post
                 :params {:code code})
    (assoc db :build-progress :building)))
@@ -63,8 +76,9 @@
    (request (str robip-server-uri path)
             #js{:encoding nil}
             (fn [err res body]
-              (when-not err
-                (r/dispatch [:write-to-file body]))))
+              (if-not err
+                (r/dispatch [:write-to-file body])
+                (r/dispatch [:report-error "build failed"]))))
    (assoc db :build-progress :downloading)))
 
 (r/register-handler
@@ -74,7 +88,9 @@
    (let [path (-> (os.tmpdir) (path.join "firmware.bin"))]
      (fs.writeFile path content
                    (fn [err]
-                     (when-not err (r/dispatch [:upload-to-device path])))))
+                     (if-not err
+                       (r/dispatch [:upload-to-device path])
+                       (r/dispatch [:report-error "build failed"])))))
    db))
 
 (r/register-handler
@@ -87,7 +103,8 @@
      (.on proc "exit"
           (fn [code signal]
             (if (= code 0)
-              (r/dispatch [:upload-complete]))))
+              (r/dispatch [:upload-complete])
+              (r/dispatch [:report-error "uploading failed"]))))
      (.on (.-stderr proc) "data"
           (fn [data] (println (str data)))))
    (assoc db :build-progress :uploading)))
