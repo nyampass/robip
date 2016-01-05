@@ -15,17 +15,33 @@
     <textarea id="blocklyCode"></textarea>
     <script src="js/compiled/robip.js" type="text/javascript"></script>
     <xml id="toolbox" style="display: none">
-      <block type="entry_point"></block>
-      <block type="inout_pin_mode"></block>
-      <block type="inout_buildin_led"></block>
-      <block type="base_delay"></block>
-      <block type="controls_if"></block>
-      <block type="controls_repeat_ext"></block>
-      <block type="logic_compare"></block>
-      <block type="math_number"></block>
-      <block type="math_arithmetic"></block>
-      <block type="text"></block>
-      <block type="text_print"></block>
+      <category name="Settings">
+        <block type="entry_point"></block>
+        <block type="inout_pin_mode"></block>
+      </category>
+      <category name="LED">
+        <block type="inout_buildin_led"></block>
+      </category>
+      <category name="Math">
+        <block type="math_number"></block>
+        <block type="math_arithmetic"></block>
+      </category>
+      <category name="Logic">
+        <block type="logic_compare"></block>
+        <block type="logic_operation"></block>
+        <block type="logic_negate"></block>
+      </category>
+      <category name="Text">
+        <block type="text"></block>
+      </category>
+      <category name="Control">
+        <block type="base_delay"></block>
+        <block type="controls_if"></block>
+        <block type="controls_for"></block>
+        <block type="controls_whileUntil"></block>
+      </category>
+      <category name="Variable" custom="VARIABLE"></category>
+      <category name="Function" custom="PROCEDURE"></category>
     </xml>
   </body>
 </html>
