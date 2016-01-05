@@ -42,16 +42,7 @@
  (fn [_ _]
    (let [opts #js{:toolbox (.getElementById js/document "toolbox")}
          workspace (Blockly.inject "blocklyDiv" opts)]
-     (set! (.-onclick (.getElementById js/document "codegen"))
-           (fn [e]
-             (let [code-area (.getElementById js/document "blocklyCode")
-                   code (.workspaceToCode Arduino workspace)]
-               (set! (.-value code-area) code))))
-     (set! (.-onclick (.getElementById js/document "build"))
-           (fn [e]
-             (let [code (.workspaceToCode Arduino workspace)]
-               (r/dispatch [:build code]))))
-     workspace)))
+     {:workspace workspace :build-progress :done})))
 
 (r/register-handler
  :build
@@ -63,7 +54,7 @@
                     (r/dispatch [:download-binary (:url result)])))
                 :method :post
                 :params {:code code})
-   db))
+   (assoc db :build-progress :building)))
 
 (r/register-handler
  :download-binary
@@ -74,7 +65,7 @@
             (fn [err res body]
               (when-not err
                 (r/dispatch [:write-to-file body]))))
-   db))
+   (assoc db :build-progress :downloading)))
 
 (r/register-handler
  :write-to-file
@@ -99,16 +90,46 @@
               (r/dispatch [:upload-complete]))))
      (.on (.-stderr proc) "data"
           (fn [data] (println (str data)))))
-   db))
+   (assoc db :build-progress :uploading)))
 
 (r/register-handler
  :upload-complete
  (fn [db _]
    (println "upload completed")
-   db))
+   (assoc db :build-progress :done)))
+
+(r/register-sub
+ :workspace
+ (fn [db _]
+   (reaction (:workspace @db))))
+
+(r/register-sub
+ :build-progress
+ (fn [db _]
+   (reaction (:build-progress @db))))
+
+(defn buttons []
+  (let [build-progress (r/subscribe [:build-progress])
+        workspace (r/subscribe [:workspace])
+        codegen #(.workspaceToCode Arduino @workspace)]
+    (fn []
+      [:div
+       [:button {:type "button"
+                 :on-click (fn [e]
+                             ;; TODO: rewrite code without direct DOM handling
+                             (set! (.-value (.getElementById js/document
+                                                             "blocklyCode"))
+                                   (codegen)))}
+        "codegen"]
+       (if (= @build-progress :done)
+         [:button {:type "button"
+                   :on-click (fn [e] (r/dispatch [:build (codegen)]))}
+          "build"]
+         [:button {:type "button" :disabled true}
+          (str (name @build-progress) " ...")])])))
 
 (defn ^:export main []
   (r/dispatch-sync [:init])
-  #_(reagent/render [menubar] (.getElementById js/document "app")))
+  (reagent/render [buttons] (.getElementById js/document "buttons")))
 
 (set! (.-onload js/window) main)
