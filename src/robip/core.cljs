@@ -62,9 +62,11 @@
  (fn [db [code]]
    (api-request "/api/build"
                 (fn [[ok? result]]
-                  (if ok?
+                  (if (and ok? (= (:status result) "ok"))
                     (r/dispatch [:download-binary (:url result)])
-                    (r/dispatch [:report-error "build failed"])))
+                    (let [message (cond-> "build failed"
+                                    (:err result) (str "\n" (:err result)))]
+                      (r/dispatch [:report-error message]))))
                 :method :post
                 :params {:code code})
    (assoc db :build-progress :building)))
