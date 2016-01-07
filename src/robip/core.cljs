@@ -101,14 +101,15 @@
  (fn [db [file-path]]
    (let [lib-path (path.join "lib" "robip-tool" "robip-tool.jar")
          proc (->> #js["-jar" lib-path "-p" port-name "0" file-path]
-                   (cp.spawn "java"))]
+                   (cp.spawn "java"))
+         err (atom "")]
      (.on proc "exit"
           (fn [code signal]
             (if (= code 0)
               (r/dispatch [:upload-complete])
-              (r/dispatch [:report-error "uploading failed"]))))
+              (r/dispatch [:report-error (str "uploading failed\n" @err)]))))
      (.on (.-stderr proc) "data"
-          (fn [data] (println (str data)))))
+          (fn [data] (swap! err str data))))
    (assoc db :build-progress :uploading)))
 
 (r/register-handler
