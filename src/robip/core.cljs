@@ -42,7 +42,7 @@
 
 (r/register-handler
  :init
- (fn [_ _] {:build-progress :done}))
+ (fn [_ _] {:build-progress :done :view :block}))
 
 (r/register-handler
  :report-error
@@ -132,6 +132,11 @@
  (fn [db _]
    (reaction (:build-progress @db))))
 
+(r/register-sub
+ :view
+ (fn [db _]
+   (reaction (:view @db))))
+
 (defn button [attrs body]
   [:button (merge {:type "button" :class "pure-button pure-button-primary"}
                   attrs)
@@ -155,16 +160,36 @@
          (button {:disabled true}
                  (str (name @build-progress) " ...")))])))
 
+(defn view-selector []
+  (let [view (r/subscribe [:view])
+        selectable #(if (= @view %1) (str %2 " pure-menu-selected") %2)]
+    (fn []
+      [:div.pure-u-1
+       [:div.pure-menu.pure-menu-horizontal
+        [:ul.pure-menu-list
+         [:li {:class (selectable :block "pure-menu-item")}
+          [:a.pure-menu-link {:href "#"} "Blockly"]]
+         [:li {:class (selectable :code "pure-menu-item")}
+          [:a.pure-menu-link {:href "#"} "Code"]]]]])))
+
 (def editor
-  (with-meta
-    (fn [] [:div#blockly.pure-u-1])
-    {:component-did-mount
-     (fn [_]
-       (r/dispatch [:after-blockly-rendering]))}))
+  (let [view (r/subscribe [:view])]
+    (with-meta
+      (fn []
+        [:div.pure-u-1
+         (if (= @view :block)
+           [:div#blockly.pure-u-1]
+           [:form.pure-form
+            [:textarea.pure-input-1]])])
+      {:component-did-mount
+       (fn [_]
+         (when (= @view :block)
+           (r/dispatch [:after-blockly-rendering])))})))
 
 (defn app []
   [:div.pure-g
    [buttons]
+   [view-selector]
    [editor]])
 
 (defn ^:export main []
