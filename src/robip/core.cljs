@@ -42,10 +42,7 @@
 
 (r/register-handler
  :init
- (fn [_ _]
-   (let [opts #js{:toolbox (.getElementById js/document "toolbox")}
-         workspace (Blockly.inject "blocklyDiv" opts)]
-     {:workspace workspace :build-progress :done})))
+ (fn [_ _] {:build-progress :done}))
 
 (r/register-handler
  :report-error
@@ -55,6 +52,13 @@
    (if (not= (:build-progress db) :done)
      (assoc db :build-progress :done)
      db)))
+
+(r/register-handler
+ :after-blockly-rendering
+ (fn [db _]
+   (let [opts #js{:toolbox (.getElementById js/document "toolbox")}
+         workspace (Blockly.inject "blockly" opts)]
+     (assoc db :workspace workspace))))
 
 (r/register-handler
  :build
@@ -128,28 +132,43 @@
  (fn [db _]
    (reaction (:build-progress @db))))
 
+(defn button [attrs body]
+  [:button (merge {:type "button" :class "pure-button pure-button-primary"}
+                  attrs)
+   body])
+
 (defn buttons []
   (let [build-progress (r/subscribe [:build-progress])
         workspace (r/subscribe [:workspace])
         codegen #(.workspaceToCode Arduino @workspace)]
     (fn []
-      [:div
-       [:button {:type "button"
-                 :on-click (fn [e]
-                             ;; TODO: rewrite code without direct DOM handling
-                             (set! (.-value (.getElementById js/document
-                                                             "blocklyCode"))
-                                   (codegen)))}
-        "codegen"]
+      [:div.pure-u-1
+       (button {:on-click (fn [e]
+                            ;; TODO: rewrite code without direct DOM handling
+                            (set! (.-value (.getElementById js/document
+                                                            "blocklyCode"))
+                                  (codegen)))}
+               "codegen")
        (if (= @build-progress :done)
-         [:button {:type "button"
-                   :on-click (fn [e] (r/dispatch [:build (codegen)]))}
-          "build"]
-         [:button {:type "button" :disabled true}
-          (str (name @build-progress) " ...")])])))
+         (button {:on-click (fn [e] (r/dispatch [:build (codegen)]))}
+                 "build")
+         (button {:disabled true}
+                 (str (name @build-progress) " ...")))])))
+
+(def editor
+  (with-meta
+    (fn [] [:div#blockly.pure-u-1])
+    {:component-did-mount
+     (fn [_]
+       (r/dispatch [:after-blockly-rendering]))}))
+
+(defn app []
+  [:div.pure-g
+   [buttons]
+   [editor]])
 
 (defn ^:export main []
   (r/dispatch-sync [:init])
-  (reagent/render [buttons] (.getElementById js/document "buttons")))
+  (reagent/render [app] (.getElementById js/document "app")))
 
 (set! (.-onload js/window) main)
