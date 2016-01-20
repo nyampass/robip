@@ -188,14 +188,16 @@
 
 (def editor
   (let [view (r/subscribe [:view])
+        workspace (r/subscribe [:workspace])
         post-render #(r/dispatch [:after-blockly-rendering @view])]
     (with-meta
       (fn []
         [:div.pure-u-1
          (if (= @view :block)
            [:div#blockly.pure-u-1]
-           [:form.pure-form
-            [:textarea.pure-input-1]])])
+           (let [code (.workspaceToCode Arduino @workspace)]
+             [:form.pure-form
+              [:textarea.pure-input-1 {:defaultValue code}]]))])
       {:component-did-mount (fn [_] (post-render))
        :component-did-update (fn [_ _ _] (post-render))})))
 
