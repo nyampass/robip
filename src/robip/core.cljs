@@ -40,6 +40,9 @@
                                 :format (ajax/json-request-format)))]
     (ajax/ajax-request request)))
 
+(defn gen-code [workspace]
+  (.workspaceToCode Arduino workspace))
+
 (r/register-handler
  :init
  (fn [_ _] {:build-progress :done :view :block}))
@@ -57,7 +60,21 @@
  :select-view
  [r/trim-v]
  (fn [db [view]]
-   (assoc db :view view)))
+   (let [db' (assoc db :view view)]
+     (if (= view :code)
+       (assoc db' :code (gen-code (:workspace db')))
+       db'))))
+
+(r/register-handler
+ :switch-to-editing
+ (fn [db _]
+   (assoc db :editing-code? true)))
+
+(r/register-handler
+ :update-code
+ [r/trim-v]
+ (fn [db [code]]
+   (assoc db :code code)))
 
 (r/register-handler
  :after-blockly-rendering
@@ -75,18 +92,20 @@
 
 (r/register-handler
  :build
- [r/trim-v]
- (fn [db [code]]
-   (api-request "/api/build"
-                (fn [[ok? result]]
-                  (if (and ok? (= (:status result) "ok"))
-                    (r/dispatch [:download-binary (:url result)])
-                    (let [message (cond-> "build failed"
-                                    (:err result) (str "\n" (:err result)))]
-                      (r/dispatch [:report-error message]))))
-                :method :post
-                :params {:code code})
-   (assoc db :build-progress :building)))
+ (fn [db _]
+   (let [code (if (:editing-code? db)
+                (:code db)
+                (gen-code (:workspace db)))]
+     (api-request "/api/build"
+                  (fn [[ok? res]]
+                    (if (and ok? (= (:status res) "ok"))
+                      (r/dispatch [:download-binary (:url res)])
+                      (let [message (cond-> "build failed"
+                                      (:err res) (str "\n" (:err res)))]
+                        (r/dispatch [:report-error message]))))
+                  :method :post
+                  :params {:code code})
+     (assoc db :build-progress :building))))
 
 (r/register-handler
  :download-binary
@@ -150,6 +169,16 @@
  (fn [db _]
    (reaction (:view @db))))
 
+(r/register-sub
+ :code
+ (fn [db _]
+   (reaction (:code @db))))
+
+(r/register-sub
+ :editing-code?
+ (fn [db _]
+   (reaction (:editing-code? @db))))
+
 (defn button [attrs body]
   [:button (merge {:type "button" :class "pure-button pure-button-primary"}
                   attrs)
@@ -161,11 +190,8 @@
     (fn []
       [:div.pure-u-1
        (if (= @build-progress :done)
-         (button
-           {:on-click (fn [e]
-                        (let [code (.workspaceToCode Arduino @workspace)]
-                          (r/dispatch [:build code])))}
-           "build")
+         (button {:on-click (fn [e] (r/dispatch [:build]))}
+                 "build")
          (button {:disabled true}
                  (str (name @build-progress) " ...")))])))
 
@@ -185,15 +211,26 @@
 (def editor
   (let [view (r/subscribe [:view])
         workspace (r/subscribe [:workspace])
+        code (r/subscribe [:code])
+        editing-code? (r/subscribe [:editing-code?])
         post-render #(r/dispatch [:after-blockly-rendering @view])]
     (with-meta
       (fn []
         [:div.pure-u-1
          (if (= @view :block)
            [:div#blockly.pure-u-1]
-           (let [code (.workspaceToCode Arduino @workspace)]
-             [:form.pure-form
-              [:textarea.pure-input-1 {:defaultValue code}]]))])
+           [:form.pure-form
+            [:textarea.pure-input-1
+             {:on-change (fn [e]
+                           (when-not @editing-code?
+                             (if (js/confirm "コードを編集するとブロックでの操作ができなくなります。本当に編集しますか？")
+                               (do (r/dispatch [:switch-to-editing])
+                                   true)
+                               false)))
+              :on-blur (fn [e]
+                         (let [modified-code (.. e -target -value)]
+                           (r/dispatch [:update-code modified-code])))
+              :defaultValue @code}]])])
       {:component-did-mount (fn [_] (post-render))
        :component-did-update (fn [_ _ _] (post-render))})))
 
