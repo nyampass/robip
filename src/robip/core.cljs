@@ -230,6 +230,7 @@
                          (and (js/confirm "コードを編集するとブロックでの操作ができなくなります。本当に編集しますか？")
                               (update-code e))
                          (update-code e)))
+          :rows 16
           :value (:code @edit)}])
       {:component-did-update (fn [this _ _]
                                (when-let [caret (:caret @edit)]
