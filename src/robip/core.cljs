@@ -62,33 +62,34 @@
  (fn [db [view]]
    (let [db' (assoc db :view view)]
      (if (= view :code)
-       (assoc db' :code (gen-code (:workspace db')))
+       (assoc db' :code (gen-code (:workspace db')) :caret 0)
        db'))))
-
-(r/register-handler
- :switch-to-editing
- (fn [db _]
-   (assoc db :editing-code? true)))
 
 (r/register-handler
  :update-code
  [r/trim-v]
- (fn [db [code]]
-   (assoc db :code code)))
+ (fn [db [code caret]]
+   (assoc db :editing-code? true :code code :caret caret)))
 
 (r/register-handler
- :after-blockly-rendering
+ :after-editor-mount
  [r/trim-v]
  (fn [db [view]]
-   (if (= view :block)
-     (let [opts #js{:toolbox (.getElementById js/document "toolbox")}
-           workspace (Blockly.inject "blockly" opts)]
-       (assoc db :workspace workspace))
-     (do (doseq [toolbox (-> js/document
-                             (.getElementsByClassName "blocklyToolboxDiv")
-                             array-seq)]
-           (.. toolbox -parentElement (removeChild toolbox)))
-         db))))
+   (let [opts #js{:toolbox (.getElementById js/document "toolbox")}
+         workspace (Blockly.inject "blockly" opts)]
+     (assoc db :workspace workspace))))
+
+(r/register-handler
+ :after-editor-update
+ [r/trim-v]
+ (fn [db [view]]
+   (let [div (-> js/document
+                 (.getElementsByClassName "blocklyToolboxDiv")
+                 array-seq
+                 first)]
+     (set! (.. div -style -display)
+           (if (= view :block) "block" "none")))
+   db))
 
 (r/register-handler
  :build
@@ -175,6 +176,11 @@
    (reaction (:code @db))))
 
 (r/register-sub
+ :caret
+ (fn [db _]
+   (reaction (:caret @db))))
+
+(r/register-sub
  :editing-code?
  (fn [db _]
    (reaction (:editing-code? @db))))
@@ -208,31 +214,41 @@
          [:li {:class (selectable :code "pure-menu-item")}
           [:a.pure-menu-link {:on-click (view-selector :code)} "Code"]]]]])))
 
+(def text-editor
+  (let [editing-code? (r/subscribe [:editing-code?])
+        code (r/subscribe [:code])
+        caret (r/subscribe [:caret])
+        update-code (fn [e]
+                      (let [modified-code (.. e -target -value)
+                            caret (.. e -target -selectionStart)]
+                        (r/dispatch [:update-code modified-code caret])))]
+    (with-meta
+      (fn []
+        [:textarea.pure-input-1
+         {:on-change (fn [e]
+                       (if-not @editing-code?
+                         (and (js/confirm "コードを編集するとブロックでの操作ができなくなります。本当に編集しますか？")
+                              (update-code e))
+                         (update-code e)))
+          :value @code}])
+      {:component-did-update (fn [this _ _]
+                               (when-let [c @caret]
+                                 (-> (reagent/dom-node this)
+                                     (.setSelectionRange c c))))})))
+
 (def editor
   (let [view (r/subscribe [:view])
-        workspace (r/subscribe [:workspace])
-        code (r/subscribe [:code])
-        editing-code? (r/subscribe [:editing-code?])
-        post-render #(r/dispatch [:after-blockly-rendering @view])]
+        view-display #(array-map :display (if (= @view %1):block :none))]
     (with-meta
       (fn []
         [:div.pure-u-1
-         (if (= @view :block)
-           [:div#blockly.pure-u-1]
-           [:form.pure-form
-            [:textarea.pure-input-1
-             {:on-change (fn [e]
-                           (when-not @editing-code?
-                             (if (js/confirm "コードを編集するとブロックでの操作ができなくなります。本当に編集しますか？")
-                               (do (r/dispatch [:switch-to-editing])
-                                   true)
-                               false)))
-              :on-blur (fn [e]
-                         (let [modified-code (.. e -target -value)]
-                           (r/dispatch [:update-code modified-code])))
-              :defaultValue @code}]])])
-      {:component-did-mount (fn [_] (post-render))
-       :component-did-update (fn [_ _ _] (post-render))})))
+         [:div#blockly.pure-u-1 {:style (view-display :block)}]
+         [:form.pure-form {:style (view-display :code)}
+          [text-editor]]])
+      {:component-did-mount (fn [_]
+                              (r/dispatch [:after-editor-mount @view]))
+       :component-did-update (fn [_ _ _]
+                               (r/dispatch [:after-editor-update @view]))})))
 
 (defn app []
   [:div.pure-g
