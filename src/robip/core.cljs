@@ -45,7 +45,10 @@
 
 (r/register-handler
  :init
- (fn [_ _] {:build-progress :done :view :block}))
+ (fn [_ _]
+   {:build-progress :done
+    :view :block
+    :edit {}}))
 
 (r/register-handler
  :report-error
@@ -62,14 +65,14 @@
  (fn [db [view]]
    (let [db' (assoc db :view view)]
      (if (= view :code)
-       (assoc db' :code (gen-code (:workspace db')) :caret 0)
+       (update db' :edit assoc :code (gen-code (:workspace db')) :caret 0)
        db'))))
 
 (r/register-handler
  :update-code
  [r/trim-v]
  (fn [db [code caret]]
-   (assoc db :editing-code? true :code code :caret caret)))
+   (update db :edit assoc :editing? true :code code :caret caret)))
 
 (r/register-handler
  :after-editor-mount
@@ -94,8 +97,9 @@
 (r/register-handler
  :build
  (fn [db _]
-   (let [code (if (:editing-code? db)
-                (:code db)
+   (let [{:keys [code editing?]} (:edit db)
+         code (if editing?
+                code
                 (gen-code (:workspace db)))]
      (api-request "/api/build"
                   (fn [[ok? res]]
@@ -171,19 +175,9 @@
    (reaction (:view @db))))
 
 (r/register-sub
- :code
+ :edit
  (fn [db _]
-   (reaction (:code @db))))
-
-(r/register-sub
- :caret
- (fn [db _]
-   (reaction (:caret @db))))
-
-(r/register-sub
- :editing-code?
- (fn [db _]
-   (reaction (:editing-code? @db))))
+   (reaction (:edit @db))))
 
 (defn button [attrs body]
   [:button (merge {:type "button" :class "pure-button pure-button-primary"}
@@ -215,9 +209,7 @@
           [:a.pure-menu-link {:on-click (view-selector :code)} "Code"]]]]])))
 
 (def text-editor
-  (let [editing-code? (r/subscribe [:editing-code?])
-        code (r/subscribe [:code])
-        caret (r/subscribe [:caret])
+  (let [edit (r/subscribe [:edit])
         update-code (fn [e]
                       (let [modified-code (.. e -target -value)
                             caret (.. e -target -selectionStart)]
@@ -226,15 +218,15 @@
       (fn []
         [:textarea.pure-input-1
          {:on-change (fn [e]
-                       (if-not @editing-code?
+                       (if-not (:editing? @edit)
                          (and (js/confirm "コードを編集するとブロックでの操作ができなくなります。本当に編集しますか？")
                               (update-code e))
                          (update-code e)))
-          :value @code}])
+          :value (:code @edit)}])
       {:component-did-update (fn [this _ _]
-                               (when-let [c @caret]
+                               (when-let [caret (:caret @edit)]
                                  (-> (reagent/dom-node this)
-                                     (.setSelectionRange c c))))})))
+                                     (.setSelectionRange caret caret))))})))
 
 (def editor
   (let [view (r/subscribe [:view])
