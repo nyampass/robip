@@ -199,9 +199,10 @@
   (let [view (r/subscribe [:view])
         edit (r/subscribe [:edit])
         cond-pure-class #(if %2 (str %1 " pure-menu-" %3) %1)
-        view-selector #(fn [e]
-                         (when-not (:editing? @edit)
-                           (r/dispatch [:select-view %])))]
+        view-selector #(fn [e] (r/dispatch [:select-view %]))
+        wrap-link (fn [view text]
+                    [:a.pure-menu-link {:on-click (view-selector view)}
+                     text])]
     (fn []
       [:div.pure-u-1
        [:div.pure-menu.pure-menu-horizontal
@@ -209,10 +210,11 @@
          [:li {:class (-> "pure-menu-item"
                           (cond-pure-class (= @view :block) "selected")
                           (cond-pure-class (:editing? @edit) "disabled"))}
-          [:a.pure-menu-link {:on-click (view-selector :block)} "Blockly"]]
+          (cond->> "Blockly"
+            (not (:editing? @edit)) (wrap-link :block))]
          [:li {:class (-> "pure-menu-item"
                           (cond-pure-class (= @view :code) "selected"))}
-          [:a.pure-menu-link {:on-click (view-selector :code)} "Code"]]]]])))
+          (wrap-link :code "Code")]]]])))
 
 (def text-editor
   (let [edit (r/subscribe [:edit])
