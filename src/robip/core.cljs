@@ -19,7 +19,7 @@
 
 (def robip-server-uri "http://127.0.0.1:3000")
 
-(def port-name "/dev/tty.usbserial-DA01LW3C")
+#_(def port-name "/dev/tty.usbserial-DA01LW3C")
 
 (enable-console-print!)
 
@@ -141,7 +141,7 @@
  [r/trim-v]
  (fn [db [file-path]]
    (let [lib-path (path.join "lib" "robip-tool" "robip-tool.jar")
-         proc (->> #js["-jar" lib-path "-p" port-name "0" file-path]
+         proc (->> #js["-jar" lib-path "--default-port" "0" file-path]
                    (cp.spawn "java"))
          err (atom "")]
      (.on proc "exit"
