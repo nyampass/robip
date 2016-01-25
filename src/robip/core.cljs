@@ -16,6 +16,7 @@
 (def os (node/require "os"))
 (def fs (node/require "fs"))
 (def path (node/require "path"))
+(def remote (node/require "remote"))
 
 (def robip-server-uri "http://127.0.0.1:3000")
 
@@ -79,7 +80,19 @@
  [r/trim-v]
  (fn [db [view]]
    (let [opts #js{:toolbox (.getElementById js/document "toolbox")}
-         workspace (Blockly.inject "blockly" opts)]
+         workspace (Blockly.inject "blockly" opts)
+         adjust-size (fn [elem]
+                       (let [height (- (.. remote
+                                           getCurrentWindow
+                                           getBounds
+                                           -height)
+                                       (.. elem -offsetTop))]
+                         (set! (.. elem -style -height) (str height "px"))))
+         resize-editor #(do (adjust-size (.getElementById js/document "blockly"))
+                            (adjust-size (.getElementById js/document "text-editor")))]
+     (set! (.-onresize js/window)
+           (fn [e] (resize-editor)))
+     (resize-editor)
      (assoc db :workspace workspace))))
 
 (r/register-handler
@@ -224,13 +237,12 @@
                         (r/dispatch [:update-code modified-code caret])))]
     (with-meta
       (fn []
-        [:textarea.pure-input-1
+        [:textarea#text-editor.pure-input-1
          {:on-change (fn [e]
                        (if-not (:editing? @edit)
                          (and (js/confirm "コードを編集するとブロックでの操作ができなくなります。本当に編集しますか？")
                               (update-code e))
                          (update-code e)))
-          :rows 16
           :value (:code @edit)}])
       {:component-did-update (fn [this _ _]
                                (when-let [caret (:caret @edit)]
