@@ -223,11 +223,11 @@
          [:li {:class (-> "pure-menu-item"
                           (cond-pure-class (= @view :block) "selected")
                           (cond-pure-class (:editing? @edit) "disabled"))}
-          (cond->> "Blockly"
+          (cond->> "ブロック"
             (not (:editing? @edit)) (wrap-link :block))]
          [:li {:class (-> "pure-menu-item"
                           (cond-pure-class (= @view :code) "selected"))}
-          (wrap-link :code "Code")]]]])))
+          (wrap-link :code "コード")]]]])))
 
 (def text-editor
   (let [edit (r/subscribe [:edit])
