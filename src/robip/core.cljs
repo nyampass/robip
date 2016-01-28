@@ -20,6 +20,9 @@
 
 (def robip-server-uri "http://127.0.0.1:3000")
 
+(def header-height 75)
+(def logging-area-height 150)
+
 #_(def port-name "/dev/tty.usbserial-DA01LW3C")
 
 (enable-console-print!)
@@ -86,7 +89,8 @@
                                            getCurrentWindow
                                            getBounds
                                            -height)
-                                       (.. elem -offsetTop))]
+                                       header-height
+                                       logging-area-height)]
                          (set! (.. elem -style -height) (str height "px"))))
          resize-editor #(do (adjust-size (.getElementById js/document "blockly"))
                             (adjust-size (.getElementById js/document "text-editor")))]
@@ -218,7 +222,7 @@
                     [:a.pure-menu-link {:on-click (view-selector view)}
                      text])]
     (fn []
-      [:div.pure-u-1
+      [:div.view-selector.pure-u-1
        [:div.pure-menu.pure-menu-horizontal
         [:ul.pure-menu-list
          [:li {:class (-> "pure-menu-item"
@@ -238,7 +242,7 @@
                         (r/dispatch [:update-code modified-code caret])))]
     (with-meta
       (fn []
-        [:textarea#text-editor.pure-input-1
+        [:textarea.text-editor.pure-input-1
          {:on-change (fn [e]
                        (if-not (:editing? @edit)
                          (and (js/confirm "コードを編集するとブロックでの操作ができなくなります。本当に編集しますか？")
@@ -255,20 +259,26 @@
         view-display #(array-map :display (if (= @view %1):block :none))]
     (with-meta
       (fn []
-        [:div.pure-u-1
+        [:div.editor.pure-u-1
          [:div#blockly.pure-u-1 {:style (view-display :block)}]
-         [:form.pure-form {:style (view-display :code)}
+         [:form#text-editor.pure-form {:style (view-display :code)}
           [text-editor]]])
       {:component-did-mount (fn [_]
                               (r/dispatch [:after-editor-mount @view]))
        :component-did-update (fn [_ _ _]
                                (r/dispatch [:after-editor-update @view]))})))
 
+(defn logging-area []
+  (fn []
+    [:div.logging-area.pure-u-1
+     [:div.logging-textarea]]))
+
 (defn app []
   [:div.pure-g
    [header]
    [view-selector]
-   [editor]])
+   [editor]
+   [logging-area]])
 
 (defn ^:export main []
   (r/dispatch-sync [:init])

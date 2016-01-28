@@ -16,3 +16,26 @@
     color: #1f8dd6;
     background-color: #fafafa;
 }
+
+.view-selector {
+    height: 40px;
+}
+
+.editor {
+}
+
+.text-editor {
+    height: 100%;
+}
+
+.logging-area {
+    background-color: #fafafa;
+    height: 150px;
+}
+
+.logging-textarea {
+    background-color: #fff;
+    height: 125px;
+    margin-top: 25px;
+    border-top: 1px solid #e5e5e5;
+}
