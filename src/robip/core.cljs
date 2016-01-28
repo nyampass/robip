@@ -192,21 +192,22 @@
  (fn [db _]
    (reaction (:edit @db))))
 
-(defn button [attrs body]
-  [:button (merge {:type "button" :class "pure-button pure-button-primary"}
-                  attrs)
-   body])
-
-(defn buttons []
+(defn header []
   (let [build-progress (r/subscribe [:build-progress])
-        workspace (r/subscribe [:workspace])]
+        workspace (r/subscribe [:workspace])
+        button (fn [attrs body]
+                 [:button (merge {:type "button"
+                                  :class "build-button pure-button"
+                                  :title "アップロード"}
+                                 attrs)
+                  body])]
     (fn []
-      [:div.pure-u-1
-       (if (= @build-progress :done)
-         (button {:on-click (fn [e] (r/dispatch [:build]))}
-                 "build")
-         (button {:disabled true}
-                 (str (name @build-progress) " ...")))])))
+      (let [content [:i {:class "fa fa-arrow-circle-right"}]]
+       [:div.pure-u-1
+        [:div.header
+         (if (= @build-progress :done)
+           (button {:on-click (fn [e] (r/dispatch [:build]))} content)
+           (button {:disabled true} content))]]))))
 
 (defn view-selector []
   (let [view (r/subscribe [:view])
@@ -265,7 +266,7 @@
 
 (defn app []
   [:div.pure-g
-   [buttons]
+   [header]
    [view-selector]
    [editor]])
 

@@ -1,2 +1,18 @@
-/* some style */
+.header {
+    height: 35px;
+    padding-left: 80px;
+    background-color: #fafafa;
+    border-bottom: 1px solid #e5e5e5;
+}
 
+.build-button {
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    box-shadow: none;
+    height: 30px;
+    margin-top: 3px;
+    padding: 1px 6px 0px;
+    font-size: 150%;
+    color: #1f8dd6;
+    background-color: #fafafa;
+}
