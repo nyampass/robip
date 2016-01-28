@@ -6,7 +6,8 @@
             [ajax.core :as ajax]
             [cljs.nodejs :as node]
             robip.blockly
-            Blockly.inject)
+            Blockly.inject
+            Blockly.Xml)
   (:import [goog History]
            [goog.history EventType]
            Blockly.Arduino))
@@ -78,6 +79,11 @@
  (fn [db [code caret]]
    (update db :edit assoc :editing? true :code code :caret caret)))
 
+(def initial-blocks-xml
+  (str "<xml xmlns=\"http://www.w3.org/1999/xhtml\">"
+       "<block type=\"entry_point\" id=\"0\" x=\"30\" y=\"20\"></block>"
+       "</xml>"))
+
 (r/register-handler
  :after-editor-mount
  [r/trim-v]
@@ -93,7 +99,9 @@
                                        logging-area-height)]
                          (set! (.. elem -style -height) (str height "px"))))
          resize-editor #(do (adjust-size (.getElementById js/document "blockly"))
-                            (adjust-size (.getElementById js/document "text-editor")))]
+                            (adjust-size (.getElementById js/document "text-editor")))
+         xml (Blockly.Xml.textToDom initial-blocks-xml)]
+     (Blockly.Xml.domToWorkspace workspace xml)
      (set! (.-onresize js/window)
            (fn [e] (resize-editor)))
      (resize-editor)
