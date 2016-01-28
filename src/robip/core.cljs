@@ -198,7 +198,7 @@
         button (fn [attrs body]
                  [:button (merge {:type "button"
                                   :class "build-button pure-button"
-                                  :title "アップロード"}
+                                  :title "ビルド"}
                                  attrs)
                   body])]
     (fn []
