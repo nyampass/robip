@@ -2,11 +2,15 @@
   (:require [reagent.core :as reagent]
             [re-frame.core :as r]
             robip.handlers
-            robip.subs))
+            robip.subs
+            [cljs.nodejs :as node]))
+
+(def path (node/require "path"))
 
 (defn header []
   (let [build-progress (r/subscribe [:build-progress])
         workspace (r/subscribe [:workspace])
+        edit (r/subscribe [:edit])
         button (fn [attrs body]
                  [:button (merge {:type "button"
                                   :class "build-button pure-button"
@@ -14,12 +18,15 @@
                                  attrs)
                   body])]
     (fn []
-      (let [content [:i {:class "fa fa-arrow-circle-right"}]]
+      (let [content [:i {:class "fa fa-arrow-circle-right"}]
+            file-path (:file-path @edit)]
        [:div.pure-u-1
         [:div.header
          (if (= @build-progress :done)
            (button {:on-click (fn [e] (r/dispatch [:build]))} content)
-           (button {:disabled true} content))]]))))
+           (button {:disabled true} content))
+         [:div.header-title (or (some-> file-path path.basename)
+                                "タイトルなし")]]]))))
 
 (defn view-selector []
   (let [view (r/subscribe [:view])

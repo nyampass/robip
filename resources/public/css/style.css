@@ -1,8 +1,23 @@
 .header {
+    position: relative;
     height: 35px;
     padding-left: 80px;
     background-color: #fafafa;
     border-bottom: 1px solid #e5e5e5;
+}
+
+.header-title {
+    position: absolute;
+    display: inline-block;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    margin: 0 auto;
+    padding-top: 8px;
+    text-align: center;
+    font-size: 12px;
+    color: #858585;
 }
 
 .build-button {
