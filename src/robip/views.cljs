@@ -76,13 +76,21 @@
        :component-did-update (fn [_ _ _]
                                (r/dispatch [:after-editor-update @view]))})))
 
-(defn logging-area []
+(def logging-textarea
   (let [logs (r/subscribe [:logs])]
-    (fn []
-      [:div.logging-area.pure-u-1
-       [:from.pure-form
+    (with-meta
+      (fn []
         [:textarea.logging-textarea.pure-input-1
-         {:read-only true, :value @logs}]]])))
+         {:read-only true, :value @logs}])
+      {:component-did-update
+       (fn [this _ _]
+         (r/dispatch [:after-logging (reagent/dom-node this)]))})))
+
+(defn logging-area []
+  (fn []
+    [:div.logging-area.pure-u-1
+     [:form.pure-form
+      [logging-textarea]]]))
 
 (defn app []
   [:div.pure-g

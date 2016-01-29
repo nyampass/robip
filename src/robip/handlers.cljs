@@ -65,6 +65,13 @@
      db)))
 
 (r/register-handler
+ :after-logging
+ [r/trim-v]
+ (fn [db [elem]]
+   (set! (.-scrollTop elem) (.-scrollHeight elem))
+   db))
+
+(r/register-handler
  :select-view
  [r/trim-v]
  (fn [db [view]]
