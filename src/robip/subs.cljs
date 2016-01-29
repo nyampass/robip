@@ -8,6 +8,11 @@
    (reaction (:workspace @db))))
 
 (r/register-sub
+ :logs
+ (fn [db _]
+   (reaction (:logs @db))))
+
+(r/register-sub
  :build-progress
  (fn [db _]
    (reaction (:build-progress @db))))

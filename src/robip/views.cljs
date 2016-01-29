@@ -77,9 +77,12 @@
                                (r/dispatch [:after-editor-update @view]))})))
 
 (defn logging-area []
-  (fn []
-    [:div.logging-area.pure-u-1
-     [:div.logging-textarea]]))
+  (let [logs (r/subscribe [:logs])]
+    (fn []
+      [:div.logging-area.pure-u-1
+       [:from.pure-form
+        [:textarea.logging-textarea.pure-input-1
+         {:read-only true, :value @logs}]]])))
 
 (defn app []
   [:div.pure-g

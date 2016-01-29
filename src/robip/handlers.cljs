@@ -18,8 +18,11 @@
 (def header-height 75)
 (def logging-area-height 150)
 
+(defn log [msg]
+  (r/dispatch [:log msg]))
+
 (defn error [msg]
-  (js/alert (str "ERROR: " msg)))
+  (r/dispatch [:error msg]))
 
 (defn api-request [path callback & opts]
   (let [{:keys [method params format] :or {method :get}} opts
@@ -43,13 +46,20 @@
  (fn [_ _]
    {:build-progress :done
     :view :block
-    :edit {}}))
+    :edit {}
+    :logs ""}))
 
 (r/register-handler
- :report-error
+ :log
  [r/trim-v]
  (fn [db [msg]]
-   (error msg)
+   (update db :logs str msg "\n")))
+
+(r/register-handler
+ :error
+ [r/trim-v]
+ (fn [db [msg]]
+   (log (str "ERROR: " msg))
    (if (not= (:build-progress db) :done)
      (assoc db :build-progress :done)
      db)))
@@ -122,7 +132,7 @@
                       (r/dispatch [:download-binary (:url res)])
                       (let [message (cond-> "build failed"
                                       (:err res) (str "\n" (:err res)))]
-                        (r/dispatch [:report-error message]))))
+                        (error message))))
                   :method :post
                   :params {:code code})
      (assoc db :build-progress :building))))
@@ -136,7 +146,7 @@
             (fn [err res body]
               (if-not err
                 (r/dispatch [:write-to-file body])
-                (r/dispatch [:report-error "build failed"]))))
+                (error "build failed"))))
    (assoc db :build-progress :downloading)))
 
 (r/register-handler
@@ -148,7 +158,7 @@
                    (fn [err]
                      (if-not err
                        (r/dispatch [:upload-to-device path])
-                       (r/dispatch [:report-error "build failed"])))))
+                       (error "build failed")))))
    db))
 
 (r/register-handler
@@ -163,7 +173,7 @@
           (fn [code signal]
             (if (= code 0)
               (r/dispatch [:upload-complete])
-              (r/dispatch [:report-error (str "uploading failed\n" @err)]))))
+              (error (str "uploading failed\n" @err)))))
      (.on (.-stderr proc) "data"
           (fn [data] (swap! err str data))))
    (assoc db :build-progress :uploading)))
@@ -171,5 +181,5 @@
 (r/register-handler
  :upload-complete
  (fn [db _]
-   (println "upload completed")
+   (log "upload completed")
    (assoc db :build-progress :done)))
