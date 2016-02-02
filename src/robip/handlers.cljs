@@ -6,6 +6,8 @@
             Blockly.inject
             Blockly.Xml))
 
+(def id "hogehoge")
+
 (def cp (node/require "child_process"))
 (def request (node/require "request"))
 (def os (node/require "os"))
@@ -134,10 +136,10 @@
                 code
                 (gen-code (:workspace db)))]
      (log "ビルド中...")
-     (api-request "/api/build"
+     (api-request (str "/api/" id "/build")
                   (fn [[ok? res]]
                     (if (and ok? (= (:status res) "ok"))
-                      (r/dispatch [:download-binary (:url res)])
+                      (r/dispatch [:build-complete])
                       (let [message (cond-> "ビルドに失敗しました"
                                       (:err res) (str "\n" (:err res)))]
                         (error message))))
@@ -189,7 +191,7 @@
    (assoc db :build-progress :uploading)))
 
 (r/register-handler
- :upload-complete
+ :build-complete
  (fn [db _]
-   (log "書き込みが完了しました")
+   (log "ビルドが完了しました")
    (assoc db :build-progress :done)))
