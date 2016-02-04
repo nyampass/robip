@@ -3,9 +3,9 @@
             [re-frame.core :as r]
             robip.handlers
             robip.subs
-            [cljs.nodejs :as node]))
+            #_[cljs.nodejs :as node]))
 
-(def path (node/require "path"))
+#_(def path (node/require "path"))
 
 (defn header []
   (let [build-progress (r/subscribe [:build-progress])
@@ -25,8 +25,8 @@
          (if (= @build-progress :done)
            (button {:on-click (fn [e] (r/dispatch [:build]))} content)
            (button {:disabled true} content))
-         [:div.header-title (or (some-> file-path path.basename)
-                                "タイトルなし")]]]))))
+         #_[:div.header-title (or (some-> file-path path.basename)
+                                  "タイトルなし")]]]))))
 
 (defn view-selector []
   (let [view (r/subscribe [:view])

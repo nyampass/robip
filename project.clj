@@ -15,13 +15,13 @@
   :plugins [[lein-cljsbuild "1.1.1"]
             [lein-figwheel "0.5.0-1"]]
 
-  :source-paths ["src"]
+  :source-paths ["src/core"]
 
   :clean-targets ^{:protect false} ["resources/public/js/compiled" "target"]
 
   :cljsbuild {:builds
               [{:id "dev"
-                :source-paths ["src"]
+                :source-paths ["src/core"]
 
                 :compiler {:main robip.core
                            :asset-path "js/compiled/out"

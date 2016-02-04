@@ -1,10 +1,10 @@
 (ns robip.handlers
   (:require [re-frame.core :as r]
             [ajax.core :as ajax]
-            [cljs.nodejs :as node]
             robip.blockly
             Blockly.inject
-            Blockly.Xml))
+            Blockly.Xml
+            [robip.handlers.util :as util]))
 
 (def id "hogehoge")
 
@@ -12,12 +12,6 @@
 
 (def header-height 75)
 (def logging-area-height 150)
-
-(defn log [msg]
-  (r/dispatch [:log msg]))
-
-(defn error [msg]
-  (r/dispatch [:error msg]))
 
 (defn api-request [path callback & opts]
   (let [{:keys [method params format] :or {method :get}} opts
@@ -43,21 +37,6 @@
     :view :block
     :edit {}
     :logs ""}))
-
-(r/register-handler
- :log
- [r/trim-v]
- (fn [db [msg]]
-   (update db :logs str msg "\n")))
-
-(r/register-handler
- :error
- [r/trim-v]
- (fn [db [msg]]
-   (log (str "エラー：" msg))
-   (if (not= (:build-progress db) :done)
-     (assoc db :build-progress :done)
-     db)))
 
 (r/register-handler
  :after-logging
@@ -125,14 +104,14 @@
          code (if editing?
                 code
                 (gen-code (:workspace db)))]
-     (log "ビルド中...")
+     (util/log "ビルド中...")
      (api-request (str "/api/" id "/build")
                   (fn [[ok? res]]
                     (if (and ok? (= (:status res) "ok"))
                       (r/dispatch [:build-complete])
                       (let [message (cond-> "ビルドに失敗しました"
                                       (:err res) (str "\n" (:err res)))]
-                        (error message))))
+                        (util/error message))))
                   :method :post
                   :params {:code code})
      (assoc db :build-progress :building))))
@@ -140,5 +119,5 @@
 (r/register-handler
  :build-complete
  (fn [db _]
-   (log "ビルドが完了しました")
+   (util/log "ビルドが完了しました")
    (assoc db :build-progress :done)))
