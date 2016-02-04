@@ -8,6 +8,11 @@
    (reaction (:workspace @db))))
 
 (r/register-sub
+ :robip-id
+ (fn [db _]
+   (reaction (:robip-id @db))))
+
+(r/register-sub
  :logs
  (fn [db _]
    (reaction (:logs @db))))

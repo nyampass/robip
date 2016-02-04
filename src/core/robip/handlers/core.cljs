@@ -46,6 +46,12 @@
    db))
 
 (r/register-handler
+ :update-robip-id
+ [r/trim-v]
+ (fn [db [robip-id]]
+   (assoc db :robip-id robip-id)))
+
+(r/register-handler
  :select-view
  [r/trim-v]
  (fn [db [view]]
@@ -100,12 +106,13 @@
 (r/register-handler
  :build
  (fn [db _]
-   (let [{:keys [code editing?]} (:edit db)
+   (let [robip-id (r/subscribe [:robip-id])
+         {:keys [code editing?]} (:edit db)
          code (if editing?
                 code
                 (gen-code (:workspace db)))]
      (util/log "ビルド中...")
-     (api-request (str "/api/" id "/build")
+     (api-request (str "/api/" @robip-id "/build")
                   (fn [[ok? res]]
                     (if (and ok? (= (:status res) "ok"))
                       (r/dispatch [:build-complete])

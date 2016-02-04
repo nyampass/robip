@@ -10,6 +10,7 @@
 (defn header []
   (let [build-progress (r/subscribe [:build-progress])
         workspace (r/subscribe [:workspace])
+        robip-id (r/subscribe [:robip-id])
         edit (r/subscribe [:edit])
         button (fn [attrs body]
                  [:button (merge {:type "button"
@@ -20,13 +21,18 @@
     (fn []
       (let [content [:i {:class "fa fa-arrow-circle-right"}]
             file-path (:file-path @edit)]
-       [:div.pure-u-1
-        [:div.header
-         (if (= @build-progress :done)
-           (button {:on-click (fn [e] (r/dispatch [:build]))} content)
-           (button {:disabled true} content))
-         #_[:div.header-title (or (some-> file-path path.basename)
-                                  "タイトルなし")]]]))))
+        [:div.pure-u-1
+         [:input.pure-u-1-8
+          {:type "text"
+           :on-change #(r/dispatch [:update-robip-id (.. % -target -value)])}
+          @robip-id]
+         [:div.header
+          (if (and (= @build-progress :done)
+                   (not (empty? @robip-id)))
+            (button {:on-click (fn [e] (r/dispatch [:build]))} content)
+            (button {:disabled true} content))
+          #_[:div.header-title (or (some-> file-path path.basename)
+                                   "タイトルなし")]]]))))
 
 (defn view-selector []
   (let [view (r/subscribe [:view])
