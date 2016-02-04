@@ -11,7 +11,7 @@
  ::log
  [r/trim-v]
  (fn [db [msg]]
-   (update db ::logs str msg "\n")))
+   (update db :logs str msg "\n")))
 
 (r/register-handler
  ::error
