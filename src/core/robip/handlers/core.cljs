@@ -1,4 +1,4 @@
-(ns robip.handlers
+(ns robip.handlers.core
   (:require [re-frame.core :as r]
             [ajax.core :as ajax]
             robip.blockly
@@ -19,7 +19,7 @@
                  (:json nil) (ajax/json-response-format {:keywords? true})
                  :raw (ajax/raw-response-format)
                  (assert false "format must be :json or :raw"))
-        request (cond-> {:uri (str robip-server-uri path)
+        request (cond-> {:uri path
                          :method method
                          :handler callback
                          :response-format format}

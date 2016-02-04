@@ -1,7 +1,7 @@
 (ns robip.views
   (:require [reagent.core :as reagent]
             [re-frame.core :as r]
-            robip.handlers
+            robip.handlers.core
             robip.subs
             #_[cljs.nodejs :as node]))
 
