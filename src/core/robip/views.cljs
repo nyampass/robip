@@ -29,6 +29,22 @@
          (wrap-link (view-selector :code)
                     [:i.fa.fa-pencil-square-o] " コード")]]])))
 
+(defn settings-pane []
+  [:div#settings-pane
+   [:div.pure-g
+    [:div.pure-u-1
+     [:form.pure-form.pure-form-aligned
+      [:fieldset
+       [:div.pure-control-group
+        [:label {:for "robip-id"} "Robip ID"]
+        [:input {:name "robip-id" :type "text" :placeholder "Robip ID"}]]
+       [:div.pure-control-group
+        [:label {:for "wifi-ssid"} "WiFi SSID"]
+        [:input {:name "wifi-ssid" :type "text" :placeholder "WiFi SSID"}]]
+       [:div.pure-control-group
+        [:label {:for "wifi-password"} "WiFi パスワード"]
+        [:input {:name "wifi-password" :type "text" :placeholder "WiFi パスワード"}]]]]]]])
+
 (defn menu []
   (let [build-progress (r/subscribe [:build-progress])
         workspace (r/subscribe [:workspace])
@@ -44,12 +60,7 @@
              (not disabled?) (wrap-link (fn [e] (r/dispatch [:build]))))])
         [:li.pure-menu-item
          [:a.pure-menu-link
-          [:i.fa.fa-ellipsis-v]]]
-        #_[:li.pure-menu-item
-           [:input.pure-u-1-8
-            {:type "text"
-             :on-change #(r/dispatch [:update-robip-id (.. % -target -value)])}
-            @robip-id]]]])))
+          [:i.fa.fa-ellipsis-v]]]]])))
 
 (defn header-menu []
   (fn []
@@ -58,7 +69,8 @@
       [:div.pure-u-1-2
        [view-selector]]
       [:div.pure-u-1-2
-       [menu]]]]))
+       [menu]]]
+     [settings-pane]]))
 
 (def text-editor
   (let [edit (r/subscribe [:edit])
