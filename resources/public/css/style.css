@@ -1,42 +1,40 @@
-.header {
-    position: relative;
-    height: 35px;
-    padding-left: 80px;
-    background-color: #fafafa;
-    border-bottom: 1px solid #e5e5e5;
-}
-
-.header-title {
-    position: absolute;
-    display: inline-block;
-    top: 0;
-    left: 0;
-    height: 100%;
-    width: 100%;
-    margin: 0 auto;
-    padding-top: 8px;
-    text-align: center;
-    font-size: 12px;
-    color: #858585;
-    z-index: 0;
-}
-
-.build-button {
-    position: relative;
-    -webkit-box-shadow: none;
-    -moz-box-shadow: none;
-    box-shadow: none;
-    height: 30px;
-    margin-top: 3px;
-    padding: 1px 6px 0px;
-    font-size: 150%;
-    color: #1f8dd6;
-    background-color: #fafafa;
-    z-index: 1;
-}
-
-.view-selector {
+#header-menu {
     height: 40px;
+    background-color: #191818;
+}
+
+#header-menu a {
+    color: #999;
+}
+
+#header-menu .pure-menu-selected {
+    background-color: #1f8dd6;
+}
+
+#header-menu .pure-menu-selected a {
+    color: #fff;
+}
+
+#header-menu .pure-menu-disabled {
+    color: #999;
+}
+
+#header-menu .pure-menu li a:hover,
+#header-menu .pure-menu li a:focus {
+    background-color: #333;
+}
+
+#header-menu li.pure-menu-selected a:hover,
+#header-menu li.pure-menu-selected a:focus {
+    background-color: #1f8dd6;
+}
+
+.right-menu {
+    text-align: right;
+}
+
+#build-menu a {
+    color: #1f8dd6;
 }
 
 .editor {

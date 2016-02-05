@@ -2,58 +2,63 @@
   (:require [reagent.core :as reagent]
             [re-frame.core :as r]
             robip.handlers.core
-            robip.subs
-            #_[cljs.nodejs :as node]))
+            robip.subs))
 
-#_(def path (node/require "path"))
+(defn cond-pure-class [classes cond option]
+  (if cond
+    (str classes " pure-menu-" option)
+    classes))
 
-(defn header []
-  (let [build-progress (r/subscribe [:build-progress])
-        workspace (r/subscribe [:workspace])
-        robip-id (r/subscribe [:robip-id])
-        edit (r/subscribe [:edit])
-        button (fn [attrs body]
-                 [:button (merge {:type "button"
-                                  :class "build-button pure-button"
-                                  :title "ビルド"}
-                                 attrs)
-                  body])]
-    (fn []
-      (let [content [:i {:class "fa fa-arrow-circle-right"}]
-            file-path (:file-path @edit)]
-        [:div.pure-u-1
-         [:input.pure-u-1-8
-          {:type "text"
-           :on-change #(r/dispatch [:update-robip-id (.. % -target -value)])}
-          @robip-id]
-         [:div.header
-          (if (and (= @build-progress :done)
-                   (not (empty? @robip-id)))
-            (button {:on-click (fn [e] (r/dispatch [:build]))} content)
-            (button {:disabled true} content))
-          #_[:div.header-title (or (some-> file-path path.basename)
-                                   "タイトルなし")]]]))))
+(defn wrap-link [callback & content]
+  `[:a.pure-menu-link {:on-click ~callback} ~@content])
 
 (defn view-selector []
   (let [view (r/subscribe [:view])
         edit (r/subscribe [:edit])
-        cond-pure-class #(if %2 (str %1 " pure-menu-" %3) %1)
-        view-selector #(fn [e] (r/dispatch [:select-view %]))
-        wrap-link (fn [view text]
-                    [:a.pure-menu-link {:on-click (view-selector view)}
-                     text])]
+        view-selector #(fn [e] (r/dispatch [:select-view %]))]
     (fn []
-      [:div.view-selector.pure-u-1
-       [:div.pure-menu.pure-menu-horizontal
-        [:ul.pure-menu-list
-         [:li {:class (-> "pure-menu-item"
-                          (cond-pure-class (= @view :block) "selected")
-                          (cond-pure-class (:editing? @edit) "disabled"))}
-          (cond->> "ブロック"
-            (not (:editing? @edit)) (wrap-link :block))]
-         [:li {:class (-> "pure-menu-item"
-                          (cond-pure-class (= @view :code) "selected"))}
-          (wrap-link :code "コード")]]]])))
+      [:div.pure-menu.pure-menu-horizontal
+       [:ul.pure-menu-list
+        [:li {:class (-> "pure-menu-item"
+                         (cond-pure-class (= @view :block) "selected")
+                         (cond-pure-class (:editing? @edit) "disabled"))}
+         (cond->> '([:i.fa.fa-th-large] " ブロック")
+           (not (:editing? @edit)) (wrap-link (view-selector :block)))]
+        [:li {:class (-> "pure-menu-item"
+                         (cond-pure-class (= @view :code) "selected"))}
+         (wrap-link (view-selector :code)
+                    [:i.fa.fa-pencil-square-o] " コード")]]])))
+
+(defn menu []
+  (let [build-progress (r/subscribe [:build-progress])
+        workspace (r/subscribe [:workspace])
+        robip-id (r/subscribe [:robip-id])
+        edit (r/subscribe [:edit])]
+    (fn []
+      [:div.pure-menu.pure-menu-horizontal.right-menu
+       [:ul.pure-menu-list
+        (let [disabled? (or (not= @build-progress :done) (empty? @robip-id))]
+          [:li#build-menu {:class (-> "pure-menu-item"
+                                      (cond-pure-class disabled? "disabled"))}
+           (cond->> '([:i.fa.fa-arrow-circle-right] [:b " ビルド"])
+             (not disabled?) (wrap-link (fn [e] (r/dispatch [:build]))))])
+        [:li.pure-menu-item
+         [:a.pure-menu-link
+          [:i.fa.fa-ellipsis-v]]]
+        #_[:li.pure-menu-item
+           [:input.pure-u-1-8
+            {:type "text"
+             :on-change #(r/dispatch [:update-robip-id (.. % -target -value)])}
+            @robip-id]]]])))
+
+(defn header-menu []
+  (fn []
+    [:div#header-menu.pure-u-1
+     [:div.pure-g
+      [:div.pure-u-1-2
+       [view-selector]]
+      [:div.pure-u-1-2
+       [menu]]]]))
 
 (def text-editor
   (let [edit (r/subscribe [:edit])
@@ -107,7 +112,6 @@
 
 (defn app []
   [:div.pure-g
-   [header]
-   [view-selector]
+   [header-menu]
    [editor]
    [logging-area]])

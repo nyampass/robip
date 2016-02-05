@@ -10,7 +10,7 @@
 
 (def robip-server-uri "http://127.0.0.1:3000")
 
-(def header-height 75)
+(def header-height 40)
 (def logging-area-height 150)
 
 (defn api-request [path callback & opts]
