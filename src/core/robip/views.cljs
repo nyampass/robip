@@ -34,19 +34,22 @@
     (fn [field-name placeholder]
       [:div.pure-control-group
        [:label {:for (name field-name)} label]
-       [:input {:name (name field-name) :type "text" :placeholder label
-                :on-change #(r/dispatch [:update-setting field-name (.. % -target -value)])}
+       [:input.pure-u-1-2.pure-u-md-7-12
+        {:name (name field-name) :type "text" :placeholder label
+         :on-change #(r/dispatch [:update-setting field-name (.. % -target -value)])}
         @content]])))
 
 (defn settings-pane []
-  [:div#settings-pane
+  [:div.pure-u-1.settings-menu
    [:div.pure-g
-    [:div.pure-u-1
-     [:form.pure-form.pure-form-aligned
-      [:fieldset
-       [setting-input-field :robip-id "Robip ID"]
-       [setting-input-field :wifi-ssid "WiFi SSID"]
-       [setting-input-field :wifi-password "WiFi パスワード"]]]]]])
+    [:div#settings-pane.pure-u-1.pure-u-md-5-12
+     [:div.pure-g
+      [:div.pure-u-1
+       [:form.pure-form.pure-form-aligned
+        [:fieldset
+         [setting-input-field :robip-id "Robip ID"]
+         [setting-input-field :wifi-ssid "WiFi SSID"]
+         [setting-input-field :wifi-password "WiFi パスワード"]]]]]]]])
 
 (defn menu []
   (let [build-progress (r/subscribe [:build-progress])
@@ -72,8 +75,7 @@
       [:div.pure-u-1-2
        [view-selector]]
       [:div.pure-u-1-2
-       [menu]]]
-     [settings-pane]]))
+       [menu]]]]))
 
 (def text-editor
   (let [edit (r/subscribe [:edit])
@@ -128,5 +130,6 @@
 (defn app []
   [:div.pure-g
    [header-menu]
+   [settings-pane]
    [editor]
    [logging-area]])

@@ -1,5 +1,8 @@
-#header-menu {
+#app {
     position: relative;
+}
+
+#header-menu {
     height: 40px;
     background-color: #191818;
 }
@@ -38,21 +41,30 @@
     color: #1f8dd6;
 }
 
+.settings-menu {
+    position: relative;
+    height: 125px;
+    z-index: 1;
+}
+
 #settings-pane {
     position: absolute;
-    display: inline-block;
-    top: 40px;
+    top: 0;
     right: 0;
-    width: 350px;
-    height: 130px;
-    padding: 10px 0px;
+    height: 100%;
+    padding: 20px 30px 0px 0px;
     border: 1px solid #333;
     color: #999;
     background-color: #191818;
-    font-size: 14px;
+    font-size: 12px;
+    text-align: right;
 }
 
 .editor {
+    position: absolute;
+    top: 40px;
+    left: 0;
+    z-index: 0;
 }
 
 .text-editor {
@@ -60,8 +72,12 @@
 }
 
 .logging-area {
+    position: fixed;
+    bottom: 0;
+    left: 0;
     background-color: #fafafa;
     height: 150px;
+    z-index: 1;
 }
 
 .logging-textarea {
