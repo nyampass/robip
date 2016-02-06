@@ -18,6 +18,11 @@
    (reaction (:logs @db))))
 
 (r/register-sub
+ :settings-pane-shown?
+ (fn [db _]
+   (reaction (:settings-pane-shown? @db))))
+
+(r/register-sub
  :build-progress
  (fn [db _]
    (reaction (:build-progress @db))))

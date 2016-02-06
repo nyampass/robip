@@ -47,6 +47,14 @@
    db))
 
 (r/register-handler
+ :toggle-settings-pane
+ [r/trim-v]
+ (fn [db [shown?]]
+   (if-not (nil? shown?)
+     (assoc db :settings-pane-shown? shown?)
+     (update db :settings-pane-shown? not))))
+
+(r/register-handler
  :update-setting
  [r/trim-v]
  (fn [db [field-name content]]

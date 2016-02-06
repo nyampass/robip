@@ -66,6 +66,7 @@
              (not disabled?) (wrap-link (fn [e] (r/dispatch [:build]))))])
         [:li.pure-menu-item
          [:a.pure-menu-link
+          {:on-click (fn [e] (r/dispatch [:toggle-settings-pane]))}
           [:i.fa.fa-ellipsis-v]]]]])))
 
 (defn header-menu []
@@ -128,8 +129,11 @@
       [logging-textarea]]]))
 
 (defn app []
-  [:div.pure-g
-   [header-menu]
-   [settings-pane]
-   [editor]
-   [logging-area]])
+  (let [settings-pane-shown? (r/subscribe [:settings-pane-shown?])]
+    (fn []
+      [:div.pure-g
+       [header-menu]
+       (when @settings-pane-shown?
+         [settings-pane])
+       [editor]
+       [logging-area]])))
