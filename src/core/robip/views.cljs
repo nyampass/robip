@@ -29,26 +29,29 @@
          (wrap-link (view-selector :code)
                     [:i.fa.fa-pencil-square-o] " コード")]]])))
 
+(defn setting-input-field [field-name label]
+  (let [content (r/subscribe [:settings field-name])]
+    (fn [field-name placeholder]
+      [:div.pure-control-group
+       [:label {:for (name field-name)} label]
+       [:input {:name (name field-name) :type "text" :placeholder label
+                :on-change #(r/dispatch [:update-setting field-name (.. % -target -value)])}
+        @content]])))
+
 (defn settings-pane []
   [:div#settings-pane
    [:div.pure-g
     [:div.pure-u-1
      [:form.pure-form.pure-form-aligned
       [:fieldset
-       [:div.pure-control-group
-        [:label {:for "robip-id"} "Robip ID"]
-        [:input {:name "robip-id" :type "text" :placeholder "Robip ID"}]]
-       [:div.pure-control-group
-        [:label {:for "wifi-ssid"} "WiFi SSID"]
-        [:input {:name "wifi-ssid" :type "text" :placeholder "WiFi SSID"}]]
-       [:div.pure-control-group
-        [:label {:for "wifi-password"} "WiFi パスワード"]
-        [:input {:name "wifi-password" :type "text" :placeholder "WiFi パスワード"}]]]]]]])
+       [setting-input-field :robip-id "Robip ID"]
+       [setting-input-field :wifi-ssid "WiFi SSID"]
+       [setting-input-field :wifi-password "WiFi パスワード"]]]]]])
 
 (defn menu []
   (let [build-progress (r/subscribe [:build-progress])
         workspace (r/subscribe [:workspace])
-        robip-id (r/subscribe [:robip-id])
+        robip-id (r/subscribe [:settings :robip-id])
         edit (r/subscribe [:edit])]
     (fn []
       [:div.pure-menu.pure-menu-horizontal.right-menu

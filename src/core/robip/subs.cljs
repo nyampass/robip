@@ -8,9 +8,9 @@
    (reaction (:workspace @db))))
 
 (r/register-sub
- :robip-id
- (fn [db _]
-   (reaction (:robip-id @db))))
+ :settings
+ (fn [db [_ field-name]]
+   (reaction (get-in @db [:settings field-name]))))
 
 (r/register-sub
  :logs

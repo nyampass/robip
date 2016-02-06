@@ -33,7 +33,8 @@
 (r/register-handler
  :init
  (fn [_ _]
-   {:build-progress :done
+   {:settings {}
+    :build-progress :done
     :view :block
     :edit {}
     :logs ""}))
@@ -46,10 +47,10 @@
    db))
 
 (r/register-handler
- :update-robip-id
+ :update-setting
  [r/trim-v]
- (fn [db [robip-id]]
-   (assoc db :robip-id robip-id)))
+ (fn [db [field-name content]]
+   (assoc-in db [:settings field-name] content)))
 
 (r/register-handler
  :select-view
@@ -106,13 +107,13 @@
 (r/register-handler
  :build
  (fn [db _]
-   (let [robip-id (r/subscribe [:robip-id])
+   (let [{:keys [robip-id wifi-ssid wifi-password]} (:settings db)
          {:keys [code editing?]} (:edit db)
          code (if editing?
                 code
                 (gen-code (:workspace db)))]
      (util/log "ビルド中...")
-     (api-request (str "/api/" @robip-id "/build")
+     (api-request (str "/api/" robip-id "/build")
                   (fn [[ok? res]]
                     (if (and ok? (= (:status res) "ok"))
                       (r/dispatch [:build-complete])
@@ -120,7 +121,9 @@
                                       (:err res) (str "\n" (:err res)))]
                         (util/error message))))
                   :method :post
-                  :params {:code code})
+                  :params {:code code
+                           :ssid wifi-ssid
+                           :pass wifi-password})
      (assoc db :build-progress :building))))
 
 (r/register-handler
