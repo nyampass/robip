@@ -9,8 +9,13 @@
     (str classes " pure-menu-" option)
     classes))
 
+(defn click-handler-attr []
+  (if (.hasOwnProperty js/window "ontouchstart")
+    :on-touch-start
+    :on-click))
+
 (defn wrap-link [callback & content]
-  `[:a.pure-menu-link {:on-click ~callback} ~@content])
+  `[:a.pure-menu-link ~{(click-handler-attr) callback} ~@content])
 
 (defn view-selector []
   (let [view (r/subscribe [:view])
@@ -65,9 +70,8 @@
            (cond->> '([:i.fa.fa-arrow-circle-right] [:b " ビルド"])
              (not disabled?) (wrap-link (fn [e] (r/dispatch [:build]))))])
         [:li.pure-menu-item
-         [:a.pure-menu-link
-          {:on-click (fn [e] (r/dispatch [:toggle-settings-pane]))}
-          [:i.fa.fa-ellipsis-v]]]]])))
+         (wrap-link (fn [e] (r/dispatch [:toggle-settings-pane]))
+                    [:i.fa.fa-ellipsis-v])]]])))
 
 (defn header-menu []
   (fn []
