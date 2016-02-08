@@ -90,17 +90,16 @@
                         (r/dispatch [:update-code modified-code caret])))]
     (with-meta
       (fn []
-        [:textarea.text-editor.pure-input-1
+        [:textarea#text-editor.pure-input-1
          {:on-change (fn [e]
-                       (if-not (:editing? @edit)
+                       (when-not (:editing? @edit)
                          (and (js/confirm "コードを編集するとブロックでの操作ができなくなります。本当に編集しますか？")
-                              (update-code e))
-                         (update-code e)))
-          :value (:code @edit)}])
+                              (update-code e))))
+          :on-blur update-code
+          :default-value (:code @edit)}])
       {:component-did-update (fn [this _ _]
-                               (when-let [caret (:caret @edit)]
-                                 (-> (reagent/dom-node this)
-                                     (.setSelectionRange caret caret))))})))
+                               (set! (.-value (reagent/dom-node this))
+                                     (:code @edit)))})))
 
 (def editor
   (let [view (r/subscribe [:view])
