@@ -41,8 +41,10 @@
        [:label {:for (name field-name)} label]
        [:input.pure-u-1-2.pure-u-md-7-12
         {:name (name field-name) :type "text" :placeholder label
-         :on-change #(r/dispatch [:update-setting field-name (.. % -target -value)])
-         :value @content}]])))
+         :default-value @content
+         :on-blur (fn [e]
+                    (let [new-content (.. e -target -value)]
+                      (r/dispatch [:update-setting field-name new-content])))}]])))
 
 (defn settings-pane []
   [:div.pure-u-1.settings-menu
