@@ -4,7 +4,8 @@
             robip.blockly
             Blockly.inject
             Blockly.Xml
-            [robip.handlers.util :as util]))
+            [robip.handlers.util :as util]
+            [robip.settings :as settings]))
 
 (def id "hogehoge")
 
@@ -33,11 +34,12 @@
 (r/register-handler
  :init
  (fn [_ _]
-   {:settings {}
-    :build-progress :done
-    :view :block
-    :edit {}
-    :logs ""}))
+   (let [settings (settings/load-from-local-storage)]
+     {:settings (or settings {})
+      :build-progress :done
+      :view :block
+      :edit {}
+      :logs ""})))
 
 (r/register-handler
  :after-logging
@@ -139,3 +141,9 @@
  (fn [db _]
    (util/log "ビルドが完了しました")
    (assoc db :build-progress :done)))
+
+(r/register-handler
+ :exit
+ (fn [db _]
+   (settings/save-to-local-storage (:settings db))
+   db))

@@ -6,6 +6,8 @@
 (enable-console-print!)
 
 (defn ^:export main []
+  (js/window.addEventListener "beforeunload"
+                              (fn [e] (r/dispatch-sync [:exit])))
   (r/dispatch-sync [:init])
   (reagent/render [views/app] (.getElementById js/document "app")))
 
