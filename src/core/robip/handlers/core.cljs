@@ -149,7 +149,7 @@
 (r/register-handler
  :build
  (fn [db _]
-   (let [{:keys [robip-id wifi-ssid wifi-password]} (:settings db)
+   (let [{:keys [robip-id wifi]} (:settings db)
          {:keys [code editing?]} (:edit db)
          code (if editing?
                 code
@@ -164,8 +164,7 @@
                         (util/error message))))
                   :method :post
                   :params {:code code
-                           :ssid wifi-ssid
-                           :pass wifi-password})
+                           :wifi (map #(dissoc % :index) (settings/wifi-settings db))})
      (assoc db :build-progress :building))))
 
 (r/register-handler

@@ -1,6 +1,7 @@
 (ns robip.subs
   (:require-macros [reagent.ratom :refer [reaction]])
-  (:require [re-frame.core :as r]))
+  (:require [robip.settings :as settings]
+            [re-frame.core :as r]))
 
 (r/register-sub
  :workspace
@@ -12,36 +13,15 @@
  (fn [db [_ field-name]]
    (reaction (get-in @db [:settings field-name]))))
 
-(defn ssid-key->index [key]
-  (if-let [matched (re-seq #"ssid-(\d+)" (name key))]
-    (-> matched first second js/parseInt)))
-
-(defn index->ssid-key [index]
-  (keyword (str "ssid-" index)))
-
-(defn index->password-key [index]
-  (keyword (str "password-" index)))
-
-(defn wifi-settings [{{wifi :wifi} :settings :as db}]
-  (prn :wifi-settings wifi)
-  (->> wifi
-       (keep (fn [[k v]]
-               (if-let [index (ssid-key->index k)]
-                 (do
-                 {:index index
-                  :ssid v
-                  :password (get wifi (index->password-key index))}))))
-      (sort-by :index)))
-
 (r/register-sub
  :wifi-settings
  (fn [db [_ & [index]]]
    (if index
-     (reaction (let [settings (wifi-settings @db)]
+     (reaction (let [settings (settings/wifi-settings @db)]
                  (if (< index (count settings))
                    (nth settings index)
                    {:ssid "" :password ""})))
-     (reaction (wifi-settings @db)))))
+     (reaction (settings/wifi-settings @db)))))
 
 (r/register-sub
  :logs
