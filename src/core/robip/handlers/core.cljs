@@ -63,6 +63,38 @@
    (assoc-in db [:settings field-name] content)))
 
 (r/register-handler
+ :update-wifi-setting
+ [r/trim-v]
+ (fn [db [key index content]]
+   (assoc-in db [:settings :wifi (keyword (str (name key) "-" index))] content)))
+
+(r/register-handler
+ :append-wifi-setting
+ [r/trim-v]
+ (fn [{{wifi :wifi} :settings :as db} []]
+   (let [new-index (inc (reduce max 0 (keep #(some->> %
+                                                      first name
+                                                      (re-seq #"ssid-(\d+)")
+                                                      first second
+                                                      js/parseInt)
+                                          wifi)))]
+     (prn :append-wifi-setting new-index)
+     (-> db
+         (assoc-in [:settings :wifi (keyword (str "ssid-" new-index))] "")
+         (assoc-in [:settings :wifi (keyword (str "password-" new-index))] "")))))
+
+(r/register-handler
+ :remove-wifi-setting
+ [r/trim-v]
+ (fn [{{wifi :wifi} :settings :as db} [index]]
+   (prn :remove-wifi-settings index)
+   (assoc-in db
+             [:settings :wifi]
+             (-> wifi
+                 (dissoc (keyword (str "ssid-" index)))
+                 (dissoc (keyword (str "password-" index)))))))
+
+(r/register-handler
  :select-view
  [r/trim-v]
  (fn [db [view]]

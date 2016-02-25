@@ -46,17 +46,55 @@
                     (let [new-content (.. e -target -value)]
                       (r/dispatch [:update-setting field-name new-content])))}]])))
 
+(defn setting-wifi-input-field [index setting]
+  (let [ssid-field-name (str "wifi-ssid-" index)
+        password-field-name (str "wifi-password-" index)]
+    (prn :setting-wifi-input-field index setting)
+    (fn []
+      [:div
+       [:div.pure-control-group
+        [:label {:for ssid-field-name} (str "Wifi SSID(" (inc index) ")")]
+        [:input.pure-button.button-xsmall.button-secondary
+         {:type "button" :value "x"
+          :on-click (fn [e]
+                      (r/dispatch [:remove-wifi-setting (:index setting)]))}]
+        [:input.pure-u-1-2.pure-u-md-7-12
+         {:name ssid-field-name :type "text" :placeholder ""
+          :default-value (:ssid setting)
+          :on-blur (fn [e]
+                     (let [new-content (.. e -target -value)]
+                       (r/dispatch [:update-wifi-setting :ssid (:index setting)
+                                    new-content])))}]
+        ]
+       [:div.pure-control-group
+        [:label {:for password-field-name} (str "Wifi パスワード(" (inc index) ")")]
+        [:input.pure-u-1-2.pure-u-md-7-12
+         {:name password-field-name :type "text" :placeholder ""
+          :default-value (:password setting)
+          :on-blur (fn [e]
+                     (let [new-content (.. e -target -value)]
+                       (r/dispatch [:update-wifi-setting :password (:index setting)
+                                    new-content])))}]]])))
+
 (defn settings-pane []
-  [:div.pure-u-1.settings-menu
-   [:div.pure-g
-    [:div#settings-pane.pure-u-1.pure-u-md-5-12
-     [:div.pure-g
-      [:div.pure-u-1
-       [:form.pure-form.pure-form-aligned
-        [:fieldset
-         [setting-input-field :robip-id "Robip ID"]
-         [setting-input-field :wifi-ssid "WiFi SSID"]
-         [setting-input-field :wifi-password "WiFi パスワード"]]]]]]]])
+  (let [wifi-settings (r/subscribe [:wifi-settings])]
+    (fn []
+      [:div.pure-u-1.settings-menu
+       [:div.pure-g
+        [:div#settings-pane.pure-u-1.pure-u-md-5-12
+         [:div.pure-g
+          [:div.pure-u-1
+           [:form.pure-form.pure-form-aligned
+            [:fieldset
+             [setting-input-field :robip-id "Robip ID"]
+             [:div
+              (keep-indexed (fn [i setting]
+                              ^{:key setting}
+                              [setting-wifi-input-field i setting])
+                            @wifi-settings)]
+             [:input {:type "button" :value "Wifiの追加"
+                      :on-click (fn [e]
+                                  (r/dispatch [:append-wifi-setting]))}]]]]]]]])))
 
 (defn menu []
   (let [build-progress (r/subscribe [:build-progress])
