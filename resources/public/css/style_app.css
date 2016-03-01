@@ -1,0 +1,86 @@
+#app {
+    position: relative;
+}
+
+#header-menu {
+    height: 0px;
+    background-color: #191818;
+}
+
+#header-menu a {
+    color: #999;
+}
+
+#header-menu .pure-menu-selected {
+    background-color: #1f8dd6;
+}
+
+#header-menu .pure-menu-selected a {
+    color: #fff;
+}
+
+#header-menu .pure-menu-disabled {
+    color: #999;
+}
+
+#header-menu .pure-menu li a:hover,
+#header-menu .pure-menu li a:focus {
+    background-color: #333;
+}
+
+#header-menu li.pure-menu-selected a:hover,
+#header-menu li.pure-menu-selected a:focus {
+    background-color: #1f8dd6;
+}
+
+.right-menu {
+    text-align: right;
+}
+
+#build-menu a {
+    color: #1f8dd6;
+}
+
+.settings-menu {
+    position: relative;
+    height: 100%;
+    z-index: 1;
+}
+
+#settings-pane {
+    height: 100%;
+    border: 1px solid #333;
+    color: #999;
+    background-color: #191818;
+}
+
+.editor {
+    position: absolute;
+    left: 0;
+    top: 40px;
+    z-index: 0;
+}
+
+#text-editor {
+    height: 100%;
+}
+
+.logging-area {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    background-color: #fafafa;
+    height: 0px;
+    z-index: 1;
+    display: none;
+}
+
+.logging-textarea {
+    background-color: #fff;
+    height: 0px;
+    margin-top: 0px;
+    padding: 0px;
+    font-family: monospace;
+    font-size: 12px;
+    display: none;
+}

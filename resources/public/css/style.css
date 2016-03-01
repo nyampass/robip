@@ -88,20 +88,42 @@
     height: 100%;
 }
 
-.logging-area {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    background-color: #fafafa;
-    height: 150px;
-    z-index: 1;
+@media (max-width: 767px) {
+    .logging-area {
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	background-color: #fafafa;
+	height: 50px;
+	z-index: 1;
+    }
+
+    .logging-textarea {
+	background-color: #fff;
+	height: 400px;
+	margin-top: 20px;
+	padding: 2px;
+	font-family: monospace;
+	font-size: 12px;
+    }
 }
 
-.logging-textarea {
-    background-color: #fff;
-    height: 130px;
-    margin-top: 20px;
-    padding: 5px 10px;
-    font-family: monospace;
-    font-size: 12px;
+@media (min-width: 768px) {
+    .logging-area {
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	background-color: #fafafa;
+	height: 150px;
+	z-index: 1;
+    }
+
+    .logging-textarea {
+	background-color: #fff;
+	height: 130px;
+	margin-top: 20px;
+	padding: 5px 10px;
+	font-family: monospace;
+	font-size: 12px;
+    }
 }

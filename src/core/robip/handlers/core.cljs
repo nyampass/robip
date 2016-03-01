@@ -11,8 +11,11 @@
 
 (def robip-server-uri "http://127.0.0.1:3000")
 
-(def header-height 40)
-(def logging-area-height 150)
+(defn header-height [db]
+  (if (:app-mode? db) 0 40))
+
+(defn logging-area-height [db]
+  (if (:app-mode? db) 0 150))
 
 (defn api-request [path callback & opts]
   (let [{:keys [method params format] :or {method :get}} opts
@@ -28,18 +31,36 @@
                                 :format (ajax/json-request-format)))]
     (ajax/ajax-request request)))
 
+(defn fetch-wifi-settings [robip-id]
+  (r/dispatch [:update-setting :robip-id robip-id]
+  (api-request (str "/api/" robip-id "/wifi")
+               (fn [[ok? res]]
+                 (js/alert (str res))
+                 (when ok?
+                   (r/dispatch [:update-all-wifi-setting (:wifi res)]))))))
+
 (defn gen-code [workspace]
   (.workspaceToCode Blockly.Arduino workspace))
 
 (r/register-handler
  :init
  (fn [_ _]
-   (let [settings (settings/load-from-local-storage)]
+   (set! (.-fetch-api-settings js/window) fetch-wifi-settings)
+   (let [app-mode? (boolean (re-seq #"app.html" (.-pathname (.-location js/window))))
+         settings (settings/load-from-local-storage)]
      {:settings (or settings {})
+      :app-mode? app-mode?
       :build-progress :done
       :view :block
       :edit {}
       :logs ""})))
+
+(r/register-handler
+ :initialize-app
+ (fn [db _]
+   (if (:app-mode? db)
+       (.init js/appBridge))
+   db))
 
 (r/register-handler
  :after-logging
@@ -52,6 +73,19 @@
  :toggle-settings-pane
  [r/trim-v]
  (fn [db [shown?]]
+   (if (:app-mode? db)
+     (do
+       (.showMenu js/appBridge)
+       db)
+     (let [db (if-not (nil? shown?)
+                (assoc db :settings-pane-shown? shown?)
+                (update db :settings-pane-shown? not))]
+       db))))
+
+(r/register-handler
+ :toggle-settings-pane-web
+ [r/trim-v]
+ (fn [db [shown?]]
    (if-not (nil? shown?)
      (assoc db :settings-pane-shown? shown?)
      (update db :settings-pane-shown? not))))
@@ -61,6 +95,18 @@
  [r/trim-v]
  (fn [db [field-name content]]
    (assoc-in db [:settings field-name] content)))
+
+(r/register-handler
+ :update-all-wifi-setting
+ [r/trim-v]
+ (fn [db [wifi-settings]]
+   (let [wifi-settings (apply merge 
+                              (keep-indexed
+                               (fn [i {:keys [ssid password]}]
+                                 {(keyword (str "ssid-" (inc i))) ssid
+                                  (keyword (str "password-" (inc i))) password}) wifi-settings))]
+     (prn :update-all-wifi-setting wifi-settings)
+     (assoc-in db [:settings :wifi] wifi-settings))))
 
 (r/register-handler
  :update-wifi-setting
@@ -78,7 +124,6 @@
                                                       first second
                                                       js/parseInt)
                                           wifi)))]
-     (prn :append-wifi-setting new-index)
      (-> db
          (assoc-in [:settings :wifi (keyword (str "ssid-" new-index))] "")
          (assoc-in [:settings :wifi (keyword (str "password-" new-index))] "")))))
@@ -122,8 +167,8 @@
          workspace (Blockly.inject "blockly" opts)
          adjust-size (fn [elem]
                        (let [height (- (.-innerHeight js/window)
-                                       header-height
-                                       logging-area-height)]
+                                       (header-height db)
+                                       (logging-area-height db))]
                          (set! (.. elem -style -height) (str height "px"))))
          resize-editor #(do (adjust-size (.getElementById js/document "blockly"))
                             (adjust-size (.getElementById js/document "text-editor")))

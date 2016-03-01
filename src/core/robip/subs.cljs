@@ -31,7 +31,10 @@
 (r/register-sub
  :settings-pane-shown?
  (fn [db _]
-   (reaction (:settings-pane-shown? @db))))
+   (.log js/console :setttings-page-show? (:app-mode? db))
+   (reaction (if (:app-mode? db)
+               nil
+               (:settings-pane-shown? @db)))))
 
 (r/register-sub
  :build-progress

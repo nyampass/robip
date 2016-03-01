@@ -107,8 +107,11 @@
         (let [disabled? (or (not= @build-progress :done) (empty? @robip-id))]
           [:li#build-menu {:class (-> "pure-menu-item"
                                       (cond-pure-class disabled? "disabled"))}
-           (cond->> '([:i.fa.fa-arrow-circle-right] [:b " ビルド"])
-             (not disabled?) (wrap-link (fn [e] (r/dispatch [:build]))))])
+           (if disabled?
+             '([:i.fa.fa-arrow-circle-right] [:b " ビルド"])
+             [:a.pure-button.button-secondary.button-small
+              {(click-handler-attr) (fn [e] (r/dispatch [:build]))}
+              [:i.fa.fa-arrow-circle-right] [:b " ビルド"]])])
         [:li.pure-menu-item
          (wrap-link (fn [e] (r/dispatch [:toggle-settings-pane]))
                     [:i.fa.fa-ellipsis-v])]]])))
@@ -171,12 +174,15 @@
      [:form.pure-form
       [logging-textarea]]]))
 
-(defn app []
+(def app
   (let [settings-pane-shown? (r/subscribe [:settings-pane-shown?])]
-    (fn []
-      [:div.pure-g
-       [header-menu]
-       (when @settings-pane-shown?
-         [settings-pane])
-       [editor]
-       [logging-area]])))
+    (with-meta
+      (fn []
+        [:div.pure-g
+         [header-menu]
+         (when @settings-pane-shown?
+           [settings-pane])
+         [editor]
+         [logging-area]])
+      {:component-did-mount (fn [_]
+                              (r/dispatch [:initialize-app]))})))

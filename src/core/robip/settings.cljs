@@ -22,6 +22,7 @@
   (keyword (str "password-" index)))
 
 (defn wifi-settings [{{wifi :wifi} :settings :as db}]
+  (prn :wifi-settings wifi)
   (->> wifi
        (keep (fn [[k v]]
                (if-let [index (ssid-key->index k)]
