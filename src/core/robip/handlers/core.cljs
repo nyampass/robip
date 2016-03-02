@@ -7,10 +7,6 @@
             [robip.handlers.util :as util]
             [robip.settings :as settings]))
 
-(def id "hogehoge")
-
-(def robip-server-uri "http://127.0.0.1:3000")
-
 (defn header-height [db]
   (if (:app-mode? db) 0 40))
 
@@ -35,9 +31,14 @@
   (r/dispatch [:update-setting :robip-id robip-id]
   (api-request (str "/api/" robip-id "/wifi")
                (fn [[ok? res]]
-                 (js/alert (str res))
                  (when ok?
                    (r/dispatch [:update-all-wifi-setting (:wifi res)]))))))
+
+(defn show-log [robip-id]
+  (api-request (str "/api/" robip-id "/logs")
+               (fn [[ok? res]]
+                 (js/alert (if ok? (:logs res)
+                               "取得に失敗しました")))))
 
 (defn gen-code [workspace]
   (.workspaceToCode Blockly.Arduino workspace))
@@ -46,6 +47,7 @@
  :init
  (fn [_ _]
    (set! (.-fetch-api-settings js/window) fetch-wifi-settings)
+   (set! (.-show-log js/window) show-log)
    (let [app-mode? (boolean (re-seq #"app.html" (.-pathname (.-location js/window))))
          settings (settings/load-from-local-storage)]
      {:settings (or settings {})
