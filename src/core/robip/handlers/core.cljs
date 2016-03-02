@@ -48,6 +48,7 @@
  (fn [_ _]
    (set! (.-fetch-api-settings js/window) fetch-wifi-settings)
    (set! (.-show-log js/window) show-log)
+   (set! (.-clear-blockly js/window) clear-blockly)
    (let [app-mode? (boolean (re-seq #"app.html" (.-pathname (.-location js/window))))
          settings (settings/load-from-local-storage)]
      {:settings (or settings {})
@@ -68,7 +69,8 @@
  :after-logging
  [r/trim-v]
  (fn [db [elem]]
-   (set! (.-scrollTop elem) (.-scrollHeight elem))
+   (if-not (:app-mode? db)
+     (set! (.-scrollTop elem) (.-scrollHeight elem)))
    db))
 
 (r/register-handler
@@ -160,6 +162,11 @@
   (str "<xml xmlns=\"http://www.w3.org/1999/xhtml\">"
        "<block type=\"entry_point\" id=\"0\" x=\"30\" y=\"20\"></block>"
        "</xml>"))
+
+(defn clear-blockly []
+  (.clear Blockly.mainWorkspace)
+  (let [xml (Blockly.Xml.textToDom initial-blocks-xml)]
+    (Blockly.Xml.domToWorkspace Blockly.mainWorkspace xml)))
 
 (r/register-handler
  :after-editor-mount
