@@ -28,11 +28,14 @@
     (ajax/ajax-request request)))
 
 (defn fetch-wifi-settings [robip-id]
-  (r/dispatch [:update-setting :robip-id robip-id]
+  (r/dispatch [:update-setting :robip-id robip-id])
   (api-request (str "/api/" robip-id "/wifi")
                (fn [[ok? res]]
-                 (when ok?
-                   (r/dispatch [:update-all-wifi-setting (:wifi res)]))))))
+                 (if ok?
+                   (do
+                     (js/alert (str "HaLakeボードの接続情報を読み込みました. (Robip ID: " robip-id ")"))
+                     (r/dispatch [:update-all-wifi-setting (:wifi res)]))
+                   (js/alert (str "HaLakeボードの接続情報に失敗しました. (Robip ID: " robip-id ")"))))))
 
 (defn show-log [robip-id]
   (api-request (str "/api/" robip-id "/logs")
