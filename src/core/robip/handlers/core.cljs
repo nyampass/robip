@@ -8,10 +8,10 @@
             [robip.settings :as settings]))
 
 (defn header-height [db]
-  (if (:app-mode? db) 0 40))
+  (if (:app-mode? db) 0 50))
 
 (defn logging-area-height [db]
-  (if (:app-mode? db) 0 150))
+  (if (:app-mode? db) 0 30))
 
 (defn api-request [path callback & opts]
   (let [{:keys [method params format] :or {method :get}} opts
@@ -73,7 +73,9 @@
  [r/trim-v]
  (fn [db [elem]]
    (if-not (:app-mode? db)
-     (set! (.-scrollTop elem) (.-scrollHeight elem)))
+;;      (set! (.-scrollTop elem) (.-scrollHeight elem))
+nil
+     )
    db))
 
 (r/register-handler
@@ -181,7 +183,8 @@
                        (let [height (- (.-innerHeight js/window)
                                        (header-height db)
                                        (logging-area-height db))]
-                         (set! (.. elem -style -height) (str height "px"))))
+                          (set! (.. elem -style -height) (str height "px"))
+))
          resize-editor #(do (adjust-size (.getElementById js/document "blockly"))
                             (adjust-size (.getElementById js/document "text-editor")))
          xml (Blockly.Xml.textToDom initial-blocks-xml)]

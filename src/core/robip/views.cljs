@@ -15,24 +15,23 @@
     :on-click))
 
 (defn wrap-link [callback & content]
-  `[:a.pure-menu-link ~{(click-handler-attr) callback} ~@content])
+  `[:a ~{(click-handler-attr) callback} ~@content])
 
 (defn view-selector []
   (let [view (r/subscribe [:view])
         edit (r/subscribe [:edit])
         view-selector #(fn [e] (r/dispatch [:select-view %]))]
     (fn []
-      [:div.pure-menu.pure-menu-horizontal
-       [:ul.pure-menu-list
-        [:li {:class (-> "pure-menu-item"
-                         (cond-pure-class (= @view :block) "selected")
-                         (cond-pure-class (:editing? @edit) "disabled"))}
-         (cond->> '([:i.fa.fa-th-large] " ブロック")
-           (not (:editing? @edit)) (wrap-link (view-selector :block)))]
-        [:li {:class (-> "pure-menu-item"
-                         (cond-pure-class (= @view :code) "selected"))}
-         (wrap-link (view-selector :code)
-                    [:i.fa.fa-pencil-square-o] " コード")]]])))
+      [:ul.nav.navbar-nav
+       [:li {:class (-> "pure-menu-item"
+                        (cond-pure-class (= @view :block) "selected")
+                        (cond-pure-class (:editing? @edit) "disabled"))}
+        (cond->> '([:i.fa.fa-th-large] " ブロック")
+          (not (:editing? @edit))
+          (wrap-link (view-selector :block)))]
+       [:li {:class (cond-pure-class "pure-menu-item" (= @view :code) "selected")}
+        (wrap-link (view-selector :code)
+                   [:i.fa.fa-pencil-square-o] " コード")]])))
 
 (defn setting-input-field [field-name label]
   (let [content (r/subscribe [:settings field-name])]
@@ -102,27 +101,25 @@
         robip-id (r/subscribe [:settings :robip-id])
         edit (r/subscribe [:edit])]
     (fn []
-      [:div.pure-menu.pure-menu-horizontal.right-menu
-       [:ul.pure-menu-list
-        (let [disabled? (or (not= @build-progress :done) (empty? @robip-id))]
-          [:li#build-menu {:class (-> "pure-menu-item"
-                                      (cond-pure-class disabled? "disabled"))}
-           (if disabled?
-             '([:i.fa.fa-arrow-circle-right] [:b " ビルド"])
-             [:a.pure-button.button-secondary.button-small
-              {(click-handler-attr) (fn [e] (r/dispatch [:build]))}
-              [:i.fa.fa-arrow-circle-right] [:b " ビルド"]])])
-        [:li.pure-menu-item
-         (wrap-link (fn [e] (r/dispatch [:toggle-settings-pane]))
-                    [:i.fa.fa-ellipsis-v])]]])))
+      [:ul.nav.navbar-nav.navbar-right
+       (let [disabled? (or (not= @build-progress :done) (empty? @robip-id))]
+         [:li#build-menu {:class (-> "pure-menu-item"
+                                     (cond-pure-class disabled? "disabled"))}
+          (if disabled?
+            '([:i.fa.fa-arrow-circle-right] [:b " ビルド"])
+            [:a
+             {(click-handler-attr) (fn [e] (r/dispatch [:build]))}
+             [:i.fa.fa-arrow-circle-right] [:b " ビルド"]])])
+       [:li
+        (wrap-link (fn [e] (r/dispatch [:toggle-settings-pane]))
+                   [:i.fa.fa-ellipsis-v])]])))
 
 (defn header-menu []
   (fn []
-    [:div#header-menu.pure-u-1
-     [:div.pure-g
-      [:div.pure-u-1-2
-       [view-selector]]
-      [:div.pure-u-1-2
+    [:nav.navbar.navbar-default
+     [:div.container-fluid
+      [:div#navbar-collapse-1.collapse.navbar-collapse
+       [view-selector]
        [menu]]]]))
 
 (def text-editor
@@ -133,7 +130,7 @@
                         (r/dispatch [:update-code modified-code caret])))]
     (with-meta
       (fn []
-        [:textarea#text-editor.pure-input-1
+        [:textarea#text-editor.form-control
          {:on-change (fn [e]
                        (when-not (:editing? @edit)
                          (and (js/confirm "コードを編集するとブロックでの操作ができなくなります。本当に編集しますか？")
@@ -149,9 +146,9 @@
         view-display #(array-map :display (if (= @view %1):block :none))]
     (with-meta
       (fn []
-        [:div.editor.pure-u-1
-         [:div#blockly.pure-u-1 {:style (view-display :block)}]
-         [:form#text-editor.pure-form {:style (view-display :code)}
+        [:div.editor
+         [:div#blockly {:style (view-display :block)}]
+         [:form#text-editor {:style (view-display :code)}
           [text-editor]]])
       {:component-did-mount (fn [_]
                               (r/dispatch [:after-editor-mount @view]))
@@ -162,7 +159,7 @@
   (let [logs (r/subscribe [:logs])]
     (with-meta
       (fn []
-        [:textarea.logging-textarea.pure-input-1
+        [:textarea.logging-textarea.form-control
          {:read-only true, :value @logs}])
       {:component-did-update
        (fn [this _ _]
@@ -170,19 +167,20 @@
 
 (defn logging-area []
   (fn []
-    [:div.logging-area.pure-u-1
-     [:form.pure-form
+    [:div.logging-area
+     [:form
       [logging-textarea]]]))
 
 (def app
   (let [settings-pane-shown? (r/subscribe [:settings-pane-shown?])]
     (with-meta
       (fn []
-        [:div.pure-g
+        [:div#container.container-fluid
          [header-menu]
          (when @settings-pane-shown?
            [settings-pane])
-         [editor]
-         [logging-area]])
+         [:div
+          [editor]
+          [logging-area]]])
       {:component-did-mount (fn [_]
                               (r/dispatch [:initialize-app]))})))
