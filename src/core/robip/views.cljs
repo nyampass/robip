@@ -4,9 +4,9 @@
             robip.handlers.core
             robip.subs))
 
-(defn cond-pure-class [classes cond option]
+(defn cond-class [classes cond class]
   (if cond
-    (str classes " pure-menu-" option)
+    (str classes " " class)
     classes))
 
 (defn click-handler-attr []
@@ -17,19 +17,25 @@
 (defn wrap-link [callback & content]
   `[:a ~{(click-handler-attr) callback} ~@content])
 
+(defn wrap-button [callback & content]
+  `[:button.btn.btn-default
+    ~{:type "button"
+      (click-handler-attr) callback} ~@content])
+
 (defn view-selector []
   (let [view (r/subscribe [:view])
         edit (r/subscribe [:edit])
         view-selector #(fn [e] (r/dispatch [:select-view %]))]
     (fn []
       [:ul.nav.navbar-nav
-       [:li {:class (-> "pure-menu-item"
-                        (cond-pure-class (= @view :block) "selected")
-                        (cond-pure-class (:editing? @edit) "disabled"))}
+       [:li {:class (-> (cond-class "" (= @view :block) "active")
+                        (cond-class (:editing? @edit) "disabled"))
+             :role "presentation"}
         (cond->> '([:i.fa.fa-th-large] " ブロック")
           (not (:editing? @edit))
           (wrap-link (view-selector :block)))]
-       [:li {:class (cond-pure-class "pure-menu-item" (= @view :code) "selected")}
+       [:li {:class (cond-class "" (= @view :code) "active")
+             :role "presentation"}
         (wrap-link (view-selector :code)
                    [:i.fa.fa-pencil-square-o] " コード")]])))
 
@@ -101,26 +107,31 @@
         robip-id (r/subscribe [:settings :robip-id])
         edit (r/subscribe [:edit])]
     (fn []
-      [:ul.nav.navbar-nav.navbar-right
-       (let [disabled? (or (not= @build-progress :done) (empty? @robip-id))]
-         [:li#build-menu {:class (-> "pure-menu-item"
-                                     (cond-pure-class disabled? "disabled"))}
-          (if disabled?
-            '([:i.fa.fa-arrow-circle-right] [:b " ビルド"])
-            [:a
-             {(click-handler-attr) (fn [e] (r/dispatch [:build]))}
-             [:i.fa.fa-arrow-circle-right] [:b " ビルド"]])])
-       [:li
-        (wrap-link (fn [e] (r/dispatch [:toggle-settings-pane]))
-                   [:i.fa.fa-ellipsis-v])]])))
+      [:ul.nav.navbar-nav.navbar-right.nav-pills
+       (list
+        (let [disabled? (or (not= @build-progress :done) (empty? @robip-id))]
+          [:li#build-menu
+           [:button
+            (let [button-attrs
+                  {:type "submit"
+                   :class "btn navbar-btn btn-primary"}]
+              (if disabled?
+                (assoc button-attrs :disabled "disabled")
+                (assoc button-attrs (click-handler-attr)
+                       (fn [e] (r/dispatch [:build])))))
+            '([:i.fa.fa-arrow-circle-right] [:b " ビルド"])]])
+        [:li
+         (wrap-link (fn [e] (r/dispatch [:toggle-settings-pane]))
+                    [:i.fa.fa-ellipsis-v])])])))
 
 (defn header-menu []
   (fn []
-    [:nav.navbar.navbar-default
-     [:div.container-fluid
-      [:div#navbar-collapse-1.collapse.navbar-collapse
-       [view-selector]
-       [menu]]]]))
+    [:div.row
+     [:div.col-sm-12
+      [:nav.navbar.navbar-default
+       [:div#navbar-collapse-1.collapse.navbar-collapse
+        [view-selector]
+        [menu]]]]]))
 
 (def text-editor
   (let [edit (r/subscribe [:edit])
