@@ -50,3 +50,9 @@
  :edit
  (fn [db _]
    (reaction (:edit @db))))
+
+(r/register-sub
+ :login
+ (fn [db _]
+   (reaction (:login @db))))
+

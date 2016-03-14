@@ -1,6 +1,7 @@
 (ns robip.views
   (:require [reagent.core :as reagent]
             [re-frame.core :as r]
+            [robip.authentication :as auth]
             robip.handlers.core
             robip.subs))
 
@@ -109,6 +110,10 @@
     (fn []
       [:ul.nav.navbar-nav.navbar-right.nav-pills
        (list
+        [:li
+         [auth/signup]]
+        [:li
+         [auth/login]]
         (let [disabled? (or (not= @build-progress :done) (empty? @robip-id))]
           [:li#build-menu
            [:button
@@ -195,3 +200,5 @@
           [logging-area]]])
       {:component-did-mount (fn [_]
                               (r/dispatch [:initialize-app]))})))
+
+

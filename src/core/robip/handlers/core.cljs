@@ -59,7 +59,8 @@
       :build-progress :done
       :view :block
       :edit {}
-      :logs ""})))
+      :logs ""
+      :login {}})))
 
 (r/register-handler
  :initialize-app
@@ -238,3 +239,51 @@ nil
  (fn [db _]
    (settings/save-to-local-storage (:settings db))
    db))
+
+(r/register-handler
+ :signup
+ [r/trim-v]
+ (fn [db [{:keys [email name password re-password] :as form} dialog-show?]]
+   (cond
+     (not (seq email)) (js/alert "メールアドレスを入力してください")
+     (not (seq name)) (js/alert "ユーザ名を入力してください")
+     (not (seq password)) (js/alert "パスワードを入力してください")
+     (not= password re-password)　(js/alert "確認用のパスワードとパスワードを一致させてください")
+     :else
+     (api-request "/api/users"
+                  (fn [[ok? res]]
+                    (js/alert (:message res))
+                    (when ok?
+                      (reset! dialog-show? false)
+                      (r/dispatch [:login email password])))
+                  :method :post
+                  :params form))
+   db))
+
+(r/register-handler
+  :login
+  [r/trim-v]
+  (fn [db [email password dialog-show?]]
+     (api-request "/api/login"
+                  (fn [[ok? res]]
+                    (if ok?
+                      (do
+                        (r/dispatch [:update-login-state (:id res) (:name res)])
+                        (if dialog-show?
+                          (reset! dialog-show? false)))
+                      (js/alert "ログインできませんでした。メールアドレスとパスワードを確認してください")))
+                  :method :post
+                  :params {:email email :password password})
+    db))
+
+(r/register-handler
+ :update-login-state
+ [r/trim-v]
+ (fn [db [id name]]
+   (assoc db :login {:id id :name name})))
+
+(r/register-handler
+  :logout
+  [r/trim-v]
+  (fn [db _]
+    (dissoc db :login {})))
