@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="utf-8">
+    <title>プログラミングソフトRobip（ロビップ）｜ニャンパス株式会社</title>
+    <meta name="author" content="Sam Norton">
+    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1"> 
+    <link rel="stylesheet" href="css/normalize.css" media="all">
+    <link rel="stylesheet" href="css/web_style.css" media="all">
+    <link href='http://fonts.googleapis.com/css?family=Lato:300,400,700,900,300italic,400italic,700italic,900italic|Raleway:400,200,300,500,700,600,800,900' rel='stylesheet' type='text/css'>
+    <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="js/jquery-1.11.1.min.js"></script>
+     <script src="js/device.min.js"></script> <!--OPTIONAL JQUERY PLUGIN-->
+    <script src="js/jquery.mb.YTPlayer.js"></script>
+    <script src="js/custom.js"></script>
+ <meta name="robots" content="noindex,follow" />
+</head>
+<body>
+ <div class="wrapper">
+ 
+	<section class="lobip-section" style="background: #fff none repeat scroll 0 0; color: #7f8c8d; padding: 10px 40px 60px;">
+    <section class="header" style="margin:0px; padding:0px; clear:both;">
+    <p><img src="images/lobiplogo.png" alt="Robip ロビップ"><b>Robip</b></p>
+    </section>
+    <section class="main" style="clear:both;">
+    <h1>プログラミングソフトRobip スタートアップガイド</h1>
+	<h2 class="about-section-title"></h2>
+    <p class="img"><img src="images/img-lobip.png" alt="プログラミングソフトRobip"></p>
+    <p>Robip（ロビップ）は、タブレット又はパソコンから、Wifi経由でHaLake（ハレイク）ボードに書き込める新しいプログラミングソフトです。<br/>プログラムをしたら、HaLakeボードが光ったり、動く。おもちゃを買う時代から自分で作る時代へ。<br/>Robipはプログラムの知識が無い方でもすぐ遊べる様に視覚的な操作でプログラミングを作る事ができます。</p>
+	<h2 class="about-section-title">Robipをつかってみよう</h2>
+    <p>現在サービスはリリース前ですが、テスト画面をご覧頂く事が可能です。</p>
+		<div class="about-robip">
+			<div class="box">
+            <p class="img"><img src="images/lobip-01.png"></p><p class="txt-s">【1】Webブラウザでhttp://robip.halake.comにアクセスして頂くと、プログラミング画面が表示されます。</p>
+            </div>
+			<div class="box">
+            <p class="img"><img src="images/lobip-02.png"></p><p class="txt-s">【2】画面のビルドボタン右のボタンをクリックし、RobipID、Wifi SSID、Wifiパスワードを設定します。</p>
+            </div>
+			<div class="box">
+            <p class="img"><img src="images/lobip-03.png"></p><p class="txt-s">【3】次に<a href="robip-tool.zip">robip-toolをこちらからダウンロード</a>してください。解凍すると「robip-tool.jar」と表示されるので、クリックしてください。</p>
+            </div>
+		</div>
+		<div class="about-robip">
+			<div class="box">
+            <p class="img"><img src="images/lobip-04.png"></p><p class="txt-s">【4】「robip-tool.jar」を開くと写真の様な画面が表示されます。</p>
+            </div>
+			<div class="box">
+            <p class="img"><img src="images/lobip-05.png"></p><p class="txt-s">【5】HaLakeボードのボタンを押したまま、PCと接続します。※HaLakeボードのボタンをクリックしたまま、PCと接続すると、ボードに書き込むモードになります。</p>
+            </div>
+			<div class="box">
+            <p class="img"><img src="images/lobip-06.png"></p><p class="txt-s">【6】HaLakeボードを接続したら再読み込みボタンをクリックすると、「cu.usbserial-....」という表記が新しく表示されます。※Windowsの方は「ttyusbserial-....」</p>
+            </div>
+		</div>
+		<div class="about-robip">
+			<div class="box">
+            <p class="img"><img src="images/lobip-07.png"></p><p class="txt-s">【7】RobipIDを入力したら「cu.usbserial-....」を設定し書き込みを行なってください。※書き込みが完了したらHaLakeボードはPCと接続を解除してOKです。HaLakeボード側で、設定したWi-Fiに自動接続しデータを取りに行く様になります。</p>
+            </div>
+			<div class="box">
+            <p class="img"><img src="images/lobip-08.png"></p><p class="txt-s">【8】Webサイト（http://robip.halake.com）にもどってもらいプログラミングを行ないます。まず、ブロック画面で、「entry point」が表示されているか確認してください。</p>
+            </div>
+			<div class="box">
+            <p class="img"><img src="images/lobip-09.png"></p><p class="txt-s">【9】Webサイトのブロック画面で、「entry point」が表示されてない場合は、「設定」メニューから「entry point」をドラッグ＆ドロップでキャンバスに移動します。</p>
+            </div>
+		</div>
+		<div class="about-robip">
+			<div class="box">
+            <p class="img"><img src="images/lobip-10.png"></p><p class="txt-s">【10】下記の図を参考にブロックを積み上げてみてください。</p>
+            </div>
+			<div class="box">
+            <p class="img"><img src="images/lobip-11.png"></p><p class="txt-s">【11】右上の「ビルド」ボタンを押してください。これで、プログラムは保存されました。</p>
+            </div>
+			<div class="box">
+            <p class="img"><img src="images/lobip-12.png"></p><p class="txt-s">【12】HaLakeボードにLEDを付けてください。LEDの足が長い方をHaLakeボードの16番、短い方をGNDに入れてください。</p>
+            </div>
+		</div>
+		<div class="about-robip">
+			<div class="box">
+            <p class="img"><img src="images/lobip-13.png"></p><p class="txt-s">【13】HaLakeボードの電源を入れて頂き、15秒程待ってもらうと、プログラムが書き変わります。【10】で作成したプログラムが正しく動けば1秒おきにLEDライトが点滅します。</p>
+            </div>
+		</div>
+        
+
+    </section>
+	</section>
+     <section>
+	<div style=" clear:both; border-top:#CCCCCC 1px solid; padding: 10px;">
+	<div style="float:left; text-align:left; position: relative;"><p style="white-space:nowrap;"><a target="_blank" href="mailto:info.halake.com">お問い合わせ</a> | <a href="http://nyampass.com" target="_blank" >運営会社</a></p></div>
+	<div style="float:right; text-align: right;  position: relative; white-space:nowrap;"><p style="white-space:nowrap;">&copy; Copyright nyampass Inc All rights reserved.</p></div>
+	</div> 
+    </section>
+</div>
+</body>
+</html>
