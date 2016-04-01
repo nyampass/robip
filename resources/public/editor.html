@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/css/bootstrap.css">
+    <link rel="stylesheet" href="css/material-design-iconic-font.min.css">
+    <link rel="stylesheet" href="css/re-com.css">
+    <link href="css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href="css/style.css" rel="stylesheet" type="text/css">
+  </head>
+  <body style="overflow: hidden">
+    <div id="app"></div>
+    <script src="js/compiled/robip.js" type="text/javascript"></script>
+    <xml id="toolbox" style="display: none">
+      <category name="設定">
+        <block type="entry_point"></block>
+      </category>
+      <category name="入出力">
+        <block type="inout_pin_mode"></block>
+        <block type="inout_digital_write"></block>
+        <block type="inout_serial_write"></block>
+        <block type="inout_digital_read"></block>
+        <block type="inout_motion_sensor_read"></block>
+        <block type="inout_motion_sensor_select"></block>
+      </category>
+      <category name="演算">
+        <block type="math_number"></block>
+        <block type="text"></block>
+        <block type="math_arithmetic"></block>
+        <block type="logic_compare"></block>
+        <block type="logic_operation"></block>
+        <block type="logic_negate"></block>
+      </category>
+      <category name="制御">
+        <block type="base_delay"></block>
+        <block type="controls_if"></block>
+        <block type="controls_infinite_loop"></block>
+        <block type="controls_dotimes"></block>
+        <block type="controls_whileUntil"></block>
+        <block type="controls_for"></block>
+      </category>
+      <category name="変数" custom="VARIABLE"></category>
+      <category name="関数" custom="PROCEDURE"></category>
+    </xml>
+  </body>
+</html>
