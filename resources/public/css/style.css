@@ -77,15 +77,18 @@ app {
 }
 
 .logging-area {
-    background-color: #fafafa;
-    height: 150px;
+    height: 310px;
     z-index: 1;
     display: none;
 }
 
 .logging-textarea {
     background-color: #fff;
-    height: 140px;
+    height: 300px;
     font-family: monospace;
     font-size: 12px;
+}
+
+.blocklyScrollbarHorizontal, .blocklyScrollbarVertical {
+    display: none
 }

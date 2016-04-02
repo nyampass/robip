@@ -181,11 +181,18 @@
        (fn [this _ _]
          (r/dispatch [:after-logging (reagent/dom-node this)]))})))
 
-(defn logging-area []
+(defn logging-modal []
   (fn []
-    [:div.logging-area
-     [:form
-      [logging-textarea]]]))
+    [:div#logging-area.modal.fade {:role "dialog" :tabIndex "-1"}
+     [:div.modal-dialog
+      [:div.modal-content
+       [:div.modal-header
+        [:h4.modal-title "ビルドログ"]]
+       [:div.modal-body
+        [logging-textarea]]
+       [:div.modal-footer
+        [:button.btn.btn-default {:data-dismiss "modal"}
+         "閉じる"]]]]]))
 
 (def app
   (let [settings-pane-shown? (r/subscribe [:settings-pane-shown?])]
@@ -197,7 +204,7 @@
            [settings-pane])
          [:div
           [editor]
-          [logging-area]]])
+          [logging-modal]]])
       {:component-did-mount (fn [_]
                               (r/dispatch [:initialize-app]))})))
 

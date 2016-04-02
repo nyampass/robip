@@ -73,10 +73,7 @@
  :after-logging
  [r/trim-v]
  (fn [db [elem]]
-   (if-not (:app-mode? db)
-;;      (set! (.-scrollTop elem) (.-scrollHeight elem))
-nil
-     )
+     (set! (.-scrollTop elem) (.-scrollHeight elem))
    db))
 
 (r/register-handler
@@ -178,7 +175,9 @@ nil
  :after-editor-mount
  [r/trim-v]
  (fn [db [view]]
-   (let [opts #js{:toolbox (.getElementById js/document "toolbox")}
+   (let [opts #js{:toolbox (.getElementById js/document "toolbox")
+                  :zoom {:wheel false :startScale 1.0 :maxScale 1.0 :minScale 1.0}
+                  :trashcan false}
          workspace (Blockly.inject "blockly" opts)
          adjust-size (fn [elem]
                        (let [height (- (.-innerHeight js/window)
@@ -215,6 +214,7 @@ nil
          code (if editing?
                 code
                 (gen-code (:workspace db)))]
+     (.modal (js/jQuery "#logging-area"))
      (util/log "ビルド中...")
      (api-request (str "/api/" robip-id "/build")
                   (fn [[ok? res]]
@@ -232,6 +232,7 @@ nil
  :build-complete
  (fn [db _]
    (util/log "ビルドが完了しました")
+   (js/alert "ビルドが完了しました.HaLakeボードの電源を入れなおして、30秒ほどお待ち下さい")
    (assoc db :build-progress :done)))
 
 (r/register-handler

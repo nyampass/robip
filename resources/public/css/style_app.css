@@ -84,3 +84,7 @@
     font-size: 12px;
     display: none;
 }
+
+.blocklyScrollbarHorizontal, .blocklyScrollbarVertical {
+    display: none
+}
