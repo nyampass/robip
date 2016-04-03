@@ -8,10 +8,7 @@
             [robip.settings :as settings]))
 
 (defn header-height [db]
-  (if (:app-mode? db) 0 50))
-
-(defn logging-area-height [db]
-  (if (:app-mode? db) 0 30))
+  (if (:app-mode? db) 50 50))
 
 (defn api-request [path callback & opts]
   (let [{:keys [method params format] :or {method :get}} opts
@@ -66,14 +63,9 @@
  :initialize-app
  (fn [db _]
    (if (:app-mode? db)
-       (.init js/appBridge))
-   db))
-
-(r/register-handler
- :after-logging
- [r/trim-v]
- (fn [db [elem]]
-     (set! (.-scrollTop elem) (.-scrollHeight elem))
+     (try
+       (.init js/appBridge)
+       (catch js/Error _)))
    db))
 
 (r/register-handler
@@ -82,7 +74,9 @@
  (fn [db [shown?]]
    (if (:app-mode? db)
      (do
-       (.showMenu js/appBridge)
+       (try
+         (.showMenu js/appBridge)
+         (catch js/Error _))
        db)
      (let [db (if-not (nil? shown?)
                 (assoc db :settings-pane-shown? shown?)
@@ -181,10 +175,8 @@
          workspace (Blockly.inject "blockly" opts)
          adjust-size (fn [elem]
                        (let [height (- (.-innerHeight js/window)
-                                       (header-height db)
-                                       (logging-area-height db))]
-                          (set! (.. elem -style -height) (str height "px"))
-))
+                                       (header-height db))]
+                          (set! (.. elem -style -height) (str height "px"))))
          resize-editor #(do (adjust-size (.getElementById js/document "blockly"))
                             (adjust-size (.getElementById js/document "text-editor")))
          xml (Blockly.Xml.textToDom initial-blocks-xml)]

@@ -124,13 +124,12 @@
     (fn []
       [v-box
        :children [(if (:id @login)
-                    [:div {:class "navbar-text"}
-                     (str "" (:name @login) "さん")]
-                    [:a
-                     {:class "navbar-text navbar-link"
+                    (str "" (:name @login) "さん")
+                    [:a.navbar-text
+                     {:style {:display "block"}
                       :on-click #(do
-                                   (reset! save-form-data @form-data)
-                                   (reset! show? true))}
+                                  (reset! save-form-data @form-data)
+                                  (reset! show? true))}
                      "Robipに参加しよう!"])
                   (when @show? [modal-panel
                                 :backdrop-color "grey"
