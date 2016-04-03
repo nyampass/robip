@@ -131,12 +131,11 @@
 
 (defn header-menu []
   (fn []
-    [:div.row
-     [:div.col-sm-12
-      [:nav.navbar.navbar-default
-       [:div#navbar-collapse-1.collapse.navbar-collapse
-        [view-selector]
-        [menu]]]]]))
+    [:nav.navbar.navbar-default
+     [:div.container-fluid
+      [:div#navbar-collapse.collapse.navbar-collapse.off
+       [view-selector]
+       [menu]]]]))
 
 (def text-editor
   (let [edit (r/subscribe [:edit])
@@ -173,13 +172,9 @@
 
 (def logging-textarea
   (let [logs (r/subscribe [:logs])]
-    (with-meta
-      (fn []
-        [:textarea.logging-textarea.form-control
-         {:read-only true, :value @logs}])
-      {:component-did-update
-       (fn [this _ _]
-         (r/dispatch [:after-logging (reagent/dom-node this)]))})))
+    (fn []
+      [:textarea.logging-textarea.form-control
+       {:read-only true, :value @logs}])))
 
 (defn logging-modal []
   (fn []
