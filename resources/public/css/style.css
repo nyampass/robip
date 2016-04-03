@@ -65,9 +65,6 @@ app {
     }
 }
 
-.editor {
-}
-
 #blocky {
     position: absolute;
 }
@@ -91,4 +88,30 @@ app {
 
 .blocklyScrollbarHorizontal, .blocklyScrollbarVertical {
     display: none
+}
+
+.navbar-collapse.collapse.off {
+    display: block!important;
+}
+.navbar-collapse.collapse.off ul {
+    margin: 0;
+    padding: 0;
+}
+
+.navbar-nav.no-collapse>li,
+.navbar-nav.no-collapse {
+    float: left !important;
+}
+
+.navbar-right.no-collapse {
+    float: right!important;
+}
+
+.navbar-nav>li>a {
+    padding-top: 15px;
+    padding-bottom: 15px;
+}
+
+.container-fluid {
+    padding: 0px;
 }
