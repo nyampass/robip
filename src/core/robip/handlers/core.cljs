@@ -170,7 +170,9 @@
  [r/trim-v]
  (fn [db [view]]
    (let [opts #js{:toolbox (.getElementById js/document "toolbox")
-                  :zoom {:wheel false :startScale 1.0 :maxScale 1.0 :minScale 1.0}
+                  :zoom {:wheel false
+                         :startScale 1.0
+                         :maxScale 1.0 :minScale 1.0}
                   :trashcan false}
          workspace (Blockly.inject "blockly" opts)
          adjust-size (fn [elem]

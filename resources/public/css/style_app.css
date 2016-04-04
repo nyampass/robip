@@ -121,3 +121,7 @@ float: right!important;
 .container-fluid {
     padding: 0px;
 }
+
+.rc-border {
+    border: none;
+}

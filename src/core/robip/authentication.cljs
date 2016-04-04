@@ -1,5 +1,6 @@
 (ns robip.authentication
-  (:require [re-com.core :refer [h-box v-box box gap line border title label modal-panel progress-bar input-text checkbox button p]]
+  (:require [re-com.core :refer [scroller h-box v-box box gap line border title label
+                                 modal-panel progress-bar input-text checkbox button p]]
             [robip.utils :refer [panel-title title2 args-table github-hyperlink status-text]]
             [re-frame.core :as r]
             [re-com.modal-panel :refer [modal-panel-args-desc]]
@@ -52,58 +53,56 @@
 
 (defn signup-dialog-markup
   [form-data process-ok process-cancel]
-  [border
-   :child  [v-box
-            :padding  "5px"
-            :children [[title :label "Robipへの参加しよう！" :level :level2]
-                       [:p 
-                        '("登録いただくことで、PC、スマホ間でプログラムを引き継ぐことができます。" [:br] "メールアドレスには保護者の方のアドレスを入れてください。アドレスを確認するためメールを送信します")]
-                       [v-box
-                        :class    "form-group"
-                        :children [[:label {:for "pf-email"} "メールアドレス"]
-                                   [input-text
-                                    :model       (:email @form-data)
-                                    :on-change   #(swap! form-data assoc :email %)
-                                    :placeholder "メールアドレス"
-                                    :class       "form-control"
-                                    :attr        {:id "pf-email"}]]]
-                       [v-box
-                        :class    "form-group"
-                        :children [[:label {:for "pf-name"} "ユーザ名"]
-                                   [input-text
-                                    :model       (:name @form-data)
-                                    :on-change   #(swap! form-data assoc :name %)
-                                    :placeholder "Robip上で使う名前"
-                                    :class       "form-control"
-                                    :attr        {:id "pf-name"}]]]
-                       [v-box
-                        :class    "form-group"
-                        :children [[:label {:for "pf-password"} "パスワード"]
-                                   [input-text
-                                    :model       (:password @form-data)
-                                    :on-change   #(swap! form-data assoc :password %)
-                                    :placeholder "パスワード(4文字以上)"
-                                    :class       "form-control"
-                                    :attr        {:id "pf-password" :type "password"}]]]
-                       [v-box
-                        :class    "form-group"
-                        :children [[:label {:for "pf-re-password"} "確認用パスワード"]
-                                   [input-text
-                                    :model       (:re-password @form-data)
-                                    :on-change   #(swap! form-data assoc :re-password %)
-                                    :placeholder "確認用パスワード"
-                                    :class       "form-control"
-                                    :attr        {:id "pf-re-password" :type "password"}]]]
-                       [line :color "#ddd" :style {:margin "10px 0 10px"}]
-                       [h-box
-                        :gap      "12px"
-                        :children [[button
-                                    :label    "登録する"
-                                    :class    "btn btn-primary"
-                                    :on-click process-ok]
-                                   [button
-                                    :label    "キャンセル"
-                                    :on-click process-cancel]]]]]])
+  [v-box
+   :padding  "5px"
+   :children [[title :label "Robipへの参加しよう！" :level :level2]
+              [label :label [:p "登録いただくことで、PC、スマホ間でプログラムを引き継ぐことができます" [:br] "メールアドレスには保護者の方のアドレスを入れてください"]]
+              [v-box
+               :class    "form-group"
+               :children [[:label {:for "pf-email"} "メールアドレス"]
+                          [input-text
+                           :model       (:email @form-data)
+                           :on-change   #(swap! form-data assoc :email %)
+                           :placeholder "メールアドレス"
+                           :class       "form-control"
+                           :attr        {:id "pf-email"}]]]
+              [v-box
+               :class    "form-group"
+               :children [[:label {:for "pf-name"} "ユーザ名"]
+                          [input-text
+                           :model       (:name @form-data)
+                           :on-change   #(swap! form-data assoc :name %)
+                           :placeholder "Robip上で使う名前"
+                           :class       "form-control"
+                           :attr        {:id "pf-name"}]]]
+              [v-box
+               :class    "form-group"
+               :children [[:label {:for "pf-password"} "パスワード"]
+                          [input-text
+                           :model       (:password @form-data)
+                           :on-change   #(swap! form-data assoc :password %)
+                           :placeholder "パスワード(4文字以上)"
+                           :class       "form-control"
+                           :attr        {:id "pf-password" :type "password"}]]]
+              [v-box
+               :class    "form-group"
+               :children [[:label {:for "pf-re-password"} "確認用パスワード"]
+                          [input-text
+                           :model       (:re-password @form-data)
+                           :on-change   #(swap! form-data assoc :re-password %)
+                           :placeholder "確認用パスワード"
+                           :class       "form-control"
+                           :attr        {:id "pf-re-password" :type "password"}]]]
+              [line :color "#ddd" :style {:margin "10px 0 10px"}]
+              [h-box
+               :gap      "12px"
+               :children [[button
+                           :label    "登録する"
+                           :class    "btn btn-primary"
+                           :on-click process-ok]
+                          [button
+                           :label    "キャンセル"
+                           :on-click process-cancel]]]]])
 
 
 (defn signup []
@@ -134,10 +133,13 @@
                   (when @show? [modal-panel
                                 :backdrop-color "grey"
                                 :backdrop-opacity 0.4
-                                :child [signup-dialog-markup
-                                        form-data
-                                        process-ok
-                                        process-cancel]])]])))
+                                :child [scroller
+                                        :v-scroll :auto
+                                        :height "300px"
+                                        :child [signup-dialog-markup
+                                                form-data
+                                                process-ok
+                                                process-cancel]]])]])))
 
 (defn login-dialog-markup
   [form-data process-ok process-cancel]
