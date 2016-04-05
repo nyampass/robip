@@ -68,8 +68,8 @@
 }
 
 .logging-textarea {
-    background-color: #fff;
-    height: 0px;
+    background-color: #fff!important;;
+    height: 300px!important;;
     margin-top: 0px;
     padding: 0px;
     font-family: monospace;

@@ -80,8 +80,8 @@ app {
 }
 
 .logging-textarea {
-    background-color: #fff;
-    height: 300px;
+    background-color: #fff!important;;
+    height: 300px!important;;
     font-family: monospace;
     font-size: 12px;
 }
