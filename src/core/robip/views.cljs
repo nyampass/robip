@@ -32,9 +32,11 @@
        [:li {:class (-> (cond-class "" (= @view :block) "active")
                         (cond-class (:editing? @edit) "disabled"))
              :role "presentation"}
-        (cond->> '([:i.fa.fa-th-large] " ブロック")
-          (not (:editing? @edit))
-          (wrap-link (view-selector :block)))]
+        (if (not (:editing? @edit))
+          (wrap-link (view-selector :block)
+                     '([:i.fa.fa-th-large] " ブロック"))
+          [:p.navbar-text
+           '([:i.fa.fa-th-large] " ブロック")])]
        [:li {:class (cond-class "" (= @view :code) "active")
              :role "presentation"}
         (wrap-link (view-selector :code)
@@ -150,7 +152,9 @@
                        (when-not (:editing? @edit)
                          (and (js/confirm "コードを編集するとブロックでの操作ができなくなります。本当に編集しますか？")
                               (update-code e))))
-          :on-blur update-code
+          :on-blur (fn [e]
+                     (when (:editiong? @edit)
+                       (update-code e)))
           :default-value (:code @edit)}])
       {:component-did-update (fn [this _ _]
                                (set! (.-value (reagent/dom-node this))
