@@ -280,4 +280,6 @@
   :logout
   [r/trim-v]
   (fn [db _]
+    (api-request (str "/api/logout")
+                 (fn [[ok? res]]))
     (dissoc db :login {})))
