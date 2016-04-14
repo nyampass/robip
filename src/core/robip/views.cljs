@@ -65,13 +65,13 @@
         [:input.pure-button.button-xsmall.button-secondary
          {:type "button" :value "x"
           :on-click (fn [e]
-                      (r/dispatch [:remove-wifi-setting (:index setting)]))}]
+                      (r/dispatch [:remove-wifi-setting index]))}]
         [:input.pure-u-1-2.pure-u-md-7-12
          {:name ssid-field-name :type "text" :placeholder ""
           :default-value (:ssid setting)
           :on-blur (fn [e]
                      (let [new-content (.. e -target -value)]
-                       (r/dispatch [:update-wifi-setting :ssid (:index setting)
+                       (r/dispatch [:update-wifi-setting :ssid index
                                     new-content])))}]
         ]
        [:div.pure-control-group
@@ -81,7 +81,7 @@
           :default-value (:password setting)
           :on-blur (fn [e]
                      (let [new-content (.. e -target -value)]
-                       (r/dispatch [:update-wifi-setting :password (:index setting)
+                       (r/dispatch [:update-wifi-setting :password index
                                     new-content])))}]]])))
 
 (defn settings-pane []

@@ -24,15 +24,13 @@
                                 :format (ajax/json-request-format)))]
     (ajax/ajax-request request)))
 
-(defn fetch-wifi-settings [robip-id]
-  (r/dispatch [:update-setting :robip-id robip-id])
-  (api-request (str "/api/" robip-id "/wifi")
+(defn fetch-user-info []
+  (api-request "/api/users/me"
                (fn [[ok? res]]
-                 (if ok?
-                   (do
-                     (js/alert (str "HaLakeボードの接続情報を読み込みました. (Robip ID: " robip-id ")"))
-                     (r/dispatch [:update-all-wifi-setting (:wifi res)]))
-                   (js/alert (str "HaLakeボードの接続情報に失敗しました. (Robip ID: " robip-id ")"))))))
+                 (when ok?
+                   (r/dispatch [:update-setting :wifi (-> res :user :wifi)])
+                   (r/dispatch [:update-setting :robip-id (-> res :user :robip-id)])
+                   (r/dispatch [:update-login-state (-> res :user :id) (-> res :user :name)])))))
 
 (defn show-log [robip-id]
   (api-request (str "/api/" robip-id "/logs")
@@ -46,12 +44,11 @@
 (r/register-handler
  :init
  (fn [_ _]
-   (set! (.-fetch-api-settings js/window) fetch-wifi-settings)
    (set! (.-show-log js/window) show-log)
    (set! (.-clear-blockly js/window) clear-blockly)
-   (let [app-mode? (boolean (re-seq #"app.html" (.-pathname (.-location js/window))))
-         settings (settings/load-from-local-storage)]
-     {:settings (or settings {})
+   (fetch-user-info)
+   (let [app-mode? (boolean (re-seq #"app.html" (.-pathname (.-location js/window))))]
+     {:settings {:wifi []}
       :app-mode? app-mode?
       :build-progress :done
       :view :block
@@ -91,54 +88,54 @@
      (assoc db :settings-pane-shown? shown?)
      (update db :settings-pane-shown? not))))
 
+
+(defn send-wifi-settings [db]
+  (api-request "/api/users/me/wifi"
+               (fn [[ok? res]])
+               :method :post
+               :params {:wifi (-> db :settings :wifi)}))
+
 (r/register-handler
  :update-setting
  [r/trim-v]
  (fn [db [field-name content]]
-   (assoc-in db [:settings field-name] content)))
-
-(r/register-handler
- :update-all-wifi-setting
- [r/trim-v]
- (fn [db [wifi-settings]]
-   (let [wifi-settings (apply merge 
-                              (keep-indexed
-                               (fn [i {:keys [ssid password]}]
-                                 {(keyword (str "ssid-" (inc i))) ssid
-                                  (keyword (str "password-" (inc i))) password}) wifi-settings))]
-     (prn :update-all-wifi-setting wifi-settings)
-     (assoc-in db [:settings :wifi] wifi-settings))))
+   (let [db (assoc-in db [:settings field-name] content)]
+     (condp = field-name
+       :robip-id
+       (api-request "/api/users/me/robip-id"
+                    (fn [[ok? res]])
+                    :method :post
+                    :params {:robip-id content})
+       (send-wifi-settings db))
+     db)))
 
 (r/register-handler
  :update-wifi-setting
  [r/trim-v]
  (fn [db [key index content]]
-   (assoc-in db [:settings :wifi (keyword (str (name key) "-" index))] content)))
+   (prn :update-wifi-setting (-> db :settings :wifi) index content key)
+   (let [wifi (assoc-in (vec (-> db :settings :wifi)) [index key] content)
+         db (assoc-in db [:settings :wifi] wifi)]
+     (send-wifi-settings db)
+     db)))
 
 (r/register-handler
  :append-wifi-setting
  [r/trim-v]
  (fn [{{wifi :wifi} :settings :as db} []]
-   (let [new-index (inc (reduce max 0 (keep #(some->> %
-                                                      first name
-                                                      (re-seq #"ssid-(\d+)")
-                                                      first second
-                                                      js/parseInt)
-                                          wifi)))]
-     (-> db
-         (assoc-in [:settings :wifi (keyword (str "ssid-" new-index))] "")
-         (assoc-in [:settings :wifi (keyword (str "password-" new-index))] "")))))
+   (assoc-in db [:settings :wifi] (cons {:ssid "" :password ""} wifi))))
+
+(defn vec-remove
+  [coll pos]
+  (vec (concat (subvec coll 0 pos) (subvec coll (inc pos)))))
 
 (r/register-handler
  :remove-wifi-setting
  [r/trim-v]
  (fn [{{wifi :wifi} :settings :as db} [index]]
-   (prn :remove-wifi-settings index)
-   (assoc-in db
-             [:settings :wifi]
-             (-> wifi
-                 (dissoc (keyword (str "ssid-" index)))
-                 (dissoc (keyword (str "password-" index)))))))
+   (let [db (assoc-in db [:settings :wifi] (vec-remove wifi index))]
+     (send-wifi-settings db)
+     db)))
 
 (r/register-handler
  :select-view
@@ -219,7 +216,7 @@
                         (util/error message))))
                   :method :post
                   :params {:code code
-                           :wifi (map #(dissoc % :index) (settings/wifi-settings db))})
+                           :wifi (map #(dissoc % :index) (-> db :settings :wifi))})
      (assoc db :build-progress :building))))
 
 (r/register-handler
@@ -248,7 +245,8 @@
      (api-request "/api/users"
                   (fn [[ok? res]]
                     (js/alert (:message res))
-                    (when ok?
+                    (when (and ok?
+                               (= (:status res) "ok"))
                       (reset! dialog-show? false)
                       (r/dispatch [:login email password])))
                   :method :post
@@ -261,7 +259,8 @@
   (fn [db [email password dialog-show?]]
      (api-request "/api/login"
                   (fn [[ok? res]]
-                    (if ok?
+                    (if (and ok?
+                             (= (:status res) "ok"))
                       (do
                         (r/dispatch [:update-login-state (:id res) (:name res)])
                         (if dialog-show?
