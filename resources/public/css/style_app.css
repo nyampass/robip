@@ -125,3 +125,16 @@ float: right!important;
 .rc-border {
     border: none;
 }
+
+.btn-facebook {
+  color: #fff;
+  min-height: 35px;
+  margin: 12px;
+  background-color: #334479;
+  background-size: 100%;
+  background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #42589d), color-stop(100%, #334479));
+  background-image: -moz-linear-gradient(#42589d, #334479);
+  background-image: -webkit-linear-gradient(#42589d, #334479);
+  background-image: linear-gradient(#42589d, #334479);
+  border: 1px solid #2d4070;
+}
