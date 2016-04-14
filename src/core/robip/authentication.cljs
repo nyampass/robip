@@ -56,7 +56,13 @@
   [v-box
    :padding  "5px"
    :children [[title :label "Robipへの参加しよう！" :level :level2]
-              [label :label [:p "登録いただくことで、PC、スマホ間でプログラムを引き継ぐことができます" [:br] "メールアドレスには保護者の方のアドレスを入れてください"]]
+              [label :label [:p "登録いただくことで、PC、スマホ間でプログラムを引き継ぐことができます"
+                             [:br] "メールアドレスには保護者の方のアドレスを入れてください"]]
+              [:a.btn.btn-large.btn-facebook {:href (str "/login/facebook/"
+                                                         (if (re-seq #"app.html" (.-pathname (.-location js/window)))
+                                                           "app"
+                                                           "default"))}
+                [:i.fa.fa-facebook-official] " Facebookでサインアップ"]
               [v-box
                :class    "form-group"
                :children [[:label {:for "pf-email"} "メールアドレス"]
@@ -149,6 +155,12 @@
    :child  [v-box
             :padding  "5px"
             :children [[title :label "Robipへログイン！" :level :level2]
+                       [:a.btn.btn-large.btn-facebook {:href (str "/login/facebook/"
+                                                                  (if (re-seq #"app.html" (.-pathname (.-location js/window)))
+                                                                    "app"
+                                                                    "default"))}
+                        [:i.fa.fa-facebook-official] " Facebookログイン"]
+
                        [v-box
                         :class    "form-group"
                         :children [[:label {:for "pf-email"} "メールアドレス"]

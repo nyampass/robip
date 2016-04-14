@@ -234,7 +234,7 @@
 (r/register-handler
  :exit
  (fn [db _]
-   (settings/save-to-local-storage (:settings db))
+   ;; (settings/save-to-local-storage (:settings db))
    db))
 
 (r/register-handler
