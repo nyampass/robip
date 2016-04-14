@@ -26,15 +26,36 @@
 (defn view-selector []
   (let [view (r/subscribe [:view])
         edit (r/subscribe [:edit])
+        file (r/subscribe [:current-file])
+        files (r/subscribe [:files])
         view-selector #(fn [e] (r/dispatch [:select-view %]))]
     (fn []
       [:ul.nav.navbar-nav
+       [:li.dropdown
+        [:a.dropdown-toggle {:href "#", :data-toggle "dropdown",
+                             :role "button", :aria-haspopup "true", :aria-expanded "false"}
+         (list [:i.fa.fa-cloud] (str " ファイル:" (:name @file)))
+         [:span.caret]]
+        [:ul.dropdown-menu
+         (concat 
+          [[:li (wrap-link (fn [e] (r/dispatch [:new-file]))
+                           '([:i.fa.fa-plus-circle] " 新規ファイル"))]
+           [:li (wrap-link (fn [e] (r/dispatch [:save-file]))
+                           '([:i.fa.fa-cloud-upload] " 保存する"))]
+           [:li.divider {:role "separator"}]]
+           (keep-indexed
+            (fn [i file]
+              [:li
+               (wrap-link (fn [e]
+                            (r/dispatch [:load-file i]))
+                          (str "読み込み: " (:name file)))])
+             @files))]]
        [:li {:class (-> (cond-class "" (= @view :block) "active")
                         (cond-class (:editing? @edit) "disabled"))
              :role "presentation"}
         (if (not (:editing? @edit))
           (wrap-link (view-selector :block)
-                     '([:i.fa.fa-th-large] " ブロック"))
+                     '([:i.fa.fa-square] " ブロック"))
           [:p.navbar-text
            '([:i.fa.fa-th-large] " ブロック")])]
        [:li {:class (cond-class "" (= @view :code) "active")
@@ -126,7 +147,7 @@
                 (assoc button-attrs :disabled "disabled")
                 (assoc button-attrs (click-handler-attr)
                        (fn [e] (r/dispatch [:build])))))
-            '([:i.fa.fa-arrow-circle-right] [:b " ビルド"])]])
+            '([:i.fa.fa-rocket] [:b " ビルド"])]])
         [:li
          (wrap-link (fn [e] (r/dispatch [:toggle-settings-pane]))
                     [:i.fa.fa-ellipsis-v])])])))
@@ -206,5 +227,4 @@
           [logging-modal]]])
       {:component-did-mount (fn [_]
                               (r/dispatch [:initialize-app]))})))
-
 

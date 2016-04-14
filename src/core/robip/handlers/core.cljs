@@ -30,6 +30,7 @@
                  (when ok?
                    (r/dispatch [:update-setting :wifi (-> res :user :wifi)])
                    (r/dispatch [:update-setting :robip-id (-> res :user :robip-id)])
+                   (r/dispatch [:update-files (-> res :user :files)])
                    (r/dispatch [:update-login-state (-> res :user :id) (-> res :user :name)])))))
 
 (defn show-log [robip-id]
@@ -51,6 +52,8 @@
      {:settings {:wifi []}
       :app-mode? app-mode?
       :build-progress :done
+      :files [{:name "New file" :code ""}]
+      :file-index 0
       :view :block
       :edit {}
       :logs ""
@@ -157,10 +160,12 @@
        "<block type=\"entry_point\" id=\"0\" x=\"30\" y=\"20\"></block>"
        "</xml>"))
 
-(defn clear-blockly []
-  (.clear Blockly.mainWorkspace)
-  (let [xml (Blockly.Xml.textToDom initial-blocks-xml)]
-    (Blockly.Xml.domToWorkspace Blockly.mainWorkspace xml)))
+(defn clear-blockly
+  ([] (clear-blockly initial-blocks-xml))
+  ([xml-code]
+   (.clear Blockly.mainWorkspace)
+   (let [xml (Blockly.Xml.textToDom xml-code)]
+     (Blockly.Xml.domToWorkspace Blockly.mainWorkspace xml))))
 
 (r/register-handler
  :after-editor-mount
@@ -283,3 +288,56 @@
     (api-request (str "/api/logout")
                  (fn [[ok? res]]))
     (dissoc db :login {})))
+
+(r/register-handler
+ :new-file
+ [r/trim-v]
+ (fn [{files :files :as db} _]
+   (let [filename (js/prompt "ファイル名を入力してください")
+         filename (if (and filename (seq filename))
+                    filename
+                    "New File")
+         files (conj files {:name filename, :xml nil})]
+     (clear-blockly)
+     (assoc db
+            :files files
+            :file-index (-> files count dec)
+            :view :block
+            :edit {}))))
+ 
+
+
+(r/register-handler
+ :load-file
+ [r/trim-v]
+ (fn [db [file-index]]
+   (clear-blockly (-> (:files db)
+                      (nth file-index)
+                      :xml))
+   (assoc db
+          :view :block
+          :edit {}
+          :file-index file-index)))
+
+(r/register-handler
+ :save-file
+ [r/trim-v]
+ (fn [db _]
+   (let [dom (Blockly.Xml.workspaceToDom Blockly.mainWorkspace)
+         xml (Blockly.Xml.domToText dom)
+         files (vec (-> db :files))
+         db (assoc db :files files)
+         file {:name (-> (:files db) (nth (:file-index db)) :name)
+               :xml xml}]
+     (api-request (str "/api/users/me/files/" (:file-index db))
+                  (fn [[ok? res]])
+                  :method :put
+                  :params file)
+     (assoc-in db [:files (:file-index db)] file))))
+
+(r/register-handler
+ :update-files
+ [r/trim-v]
+ (fn [db [files]]
+   (assoc db
+          :files (vals files))))

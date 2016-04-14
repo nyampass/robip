@@ -56,3 +56,13 @@
  (fn [db _]
    (reaction (:login @db))))
 
+(r/register-sub
+ :current-file
+ (fn [db _]
+   (reaction (nth (:files @db) (:file-index @db)))))
+
+(r/register-sub
+ :files
+ (fn [db _]
+   (reaction (or (:files @db) []))))
+
