@@ -123,7 +123,9 @@
     (fn []
       [v-box
        :children [(if (:id @login)
-                    (str "" (:name @login) "さん")
+                    [:a.navbar-text
+                     {:style {:display "block"}}
+                     (str "" (:name @login) "さん")]
                     [:a.navbar-text
                      {:style {:display "block"}
                       :on-click #(do
