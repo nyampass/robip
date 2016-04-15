@@ -36,7 +36,7 @@
                    (r/dispatch [:update-login-state (-> res :user :id) (-> res :user :name)])))))
 
 (defn show-log [robip-id]
-  (api-request (str "/api/" robip-id "/logs")
+  (api-request (str "/api/board/logs")
                (fn [[ok? res]]
                  (js/alert (if ok? (:logs res)
                                "取得に失敗しました")))))
@@ -207,7 +207,7 @@
                 (gen-code (:workspace db)))]
      (.modal (js/jQuery "#logging-area"))
      (util/log "ビルド中...")
-     (api-request (str "/api/" robip-id "/build")
+     (api-request (str "/api/board/build")
                   (fn [[ok? res]]
                     (if (and ok? (= (:status res) "ok"))
                       (r/dispatch [:build-complete])
