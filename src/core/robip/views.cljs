@@ -3,6 +3,7 @@
             [re-frame.core :as r]
             [robip.authentication :as auth]
             robip.handlers.core
+            [robip.settings :as settings]
             robip.subs))
 
 (defn cond-class [classes cond class]
@@ -34,14 +35,14 @@
        [:li.dropdown
         [:a.dropdown-toggle {:href "#", :data-toggle "dropdown",
                              :role "button", :aria-haspopup "true", :aria-expanded "false"}
-         (list [:i.fa.fa-cloud] (str " ファイル:" (:name @file)))
+         (list ^{:key 0} [:i.fa.fa-cloud] (str " ファイル:" (:name @file)))
          [:span.caret]]
         [:ul.dropdown-menu
          (concat 
-          [[:li (wrap-link (fn [e] (r/dispatch [:new-file]))
-                           '([:i.fa.fa-plus-circle] " 新規ファイル"))]
-           [:li (wrap-link (fn [e] (r/dispatch [:save-file]))
-                           '([:i.fa.fa-cloud-upload] " 保存する"))]
+          [^{:key :new} [:li (wrap-link (fn [e] (r/dispatch [:new-file]))
+                                        '(^{:key 0} [:i.fa.fa-plus-circle] " 新規ファイル"))]
+           ^{:key :save} [:li {:key :save-file} (wrap-link (fn [e] (r/dispatch [:save-file]))
+                                                           '(^{:key 0} [:i.fa.fa-cloud-upload] " 保存する"))]
            [:li.divider {:role "separator"}]]
            (keep-indexed
             (fn [i file]
@@ -63,68 +64,6 @@
         (wrap-link (view-selector :code)
                    [:i.fa.fa-pencil-square-o] " コード")]])))
 
-(defn setting-input-field [field-name label]
-  (let [content (r/subscribe [:settings field-name])]
-    (fn [field-name placeholder]
-      [:div.pure-control-group
-       [:label {:for (name field-name)} label]
-       [:input.pure-u-1-2.pure-u-md-7-12
-        {:name (name field-name) :type "text" :placeholder label
-         :default-value @content
-         :on-blur (fn [e]
-                    (let [new-content (.. e -target -value)]
-                      (r/dispatch [:update-setting field-name new-content])))}]])))
-
-(defn setting-wifi-input-field [index setting]
-  (let [ssid-field-name (str "wifi-ssid-" index)
-        password-field-name (str "wifi-password-" index)]
-    (prn :setting-wifi-input-field index setting)
-    (fn []
-      [:div
-       [:div.pure-control-group
-        [:label {:for ssid-field-name} (str "Wifi SSID(" (inc index) ")")]
-        [:input.pure-button.button-xsmall.button-secondary
-         {:type "button" :value "x"
-          :on-click (fn [e]
-                      (r/dispatch [:remove-wifi-setting index]))}]
-        [:input.pure-u-1-2.pure-u-md-7-12
-         {:name ssid-field-name :type "text" :placeholder ""
-          :default-value (:ssid setting)
-          :on-blur (fn [e]
-                     (let [new-content (.. e -target -value)]
-                       (r/dispatch [:update-wifi-setting :ssid index
-                                    new-content])))}]
-        ]
-       [:div.pure-control-group
-        [:label {:for password-field-name} (str "Wifi パスワード(" (inc index) ")")]
-        [:input.pure-u-1-2.pure-u-md-7-12
-         {:name password-field-name :type "text" :placeholder ""
-          :default-value (:password setting)
-          :on-blur (fn [e]
-                     (let [new-content (.. e -target -value)]
-                       (r/dispatch [:update-wifi-setting :password index
-                                    new-content])))}]]])))
-
-(defn settings-pane []
-  (let [wifi-settings (r/subscribe [:wifi-settings])]
-    (fn []
-      [:div.pure-u-1.settings-menu
-       [:div.pure-g
-        [:div#settings-pane.pure-u-1.pure-u-md-5-12
-         [:div.pure-g
-          [:div.pure-u-1
-           [:form.pure-form.pure-form-aligned
-            [:fieldset
-             [setting-input-field :robip-id "Robip ID"]
-             [:div
-              (keep-indexed (fn [i setting]
-                              ^{:key setting}
-                              [setting-wifi-input-field i setting])
-                            @wifi-settings)]
-             [:input {:type "button" :value "Wifiの追加"
-                      :on-click (fn [e]
-                                  (r/dispatch [:append-wifi-setting]))}]]]]]]]])))
-
 (defn menu []
   (let [build-progress (r/subscribe [:build-progress])
         workspace (r/subscribe [:workspace])
@@ -133,11 +72,14 @@
     (fn []
       [:ul.nav.navbar-nav.navbar-right.nav-pills
        (list
+        ^{:key :signup}
         [:li
          [auth/signup]]
+        ^{:key login}
         [:li
          [auth/login]]
         (let [disabled? (or (not= @build-progress :done) (empty? @robip-id))]
+          ^{:key :build}
           [:li#build-menu
            [:button
             (let [button-attrs
@@ -148,6 +90,7 @@
                 (assoc button-attrs (click-handler-attr)
                        (fn [e] (r/dispatch [:build])))))
             '([:i.fa.fa-rocket] [:b " ビルド"])]])
+        ^{:key :setting}
         [:li
          (wrap-link (fn [e] (r/dispatch [:toggle-settings-pane]))
                     [:i.fa.fa-ellipsis-v])])])))
@@ -220,11 +163,10 @@
       (fn []
         [:div#container.container-fluid
          [header-menu]
-         (when @settings-pane-shown?
-           [settings-pane])
          [:div
           [editor]
-          [logging-modal]]])
+          [logging-modal]
+          [settings/settings-modal]]])
       {:component-did-mount (fn [_]
                               (r/dispatch [:initialize-app]))})))
 

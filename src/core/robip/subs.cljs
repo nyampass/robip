@@ -17,11 +17,11 @@
  :wifi-settings
  (fn [db [_ & [index]]]
    (if index
-     (reaction (let [settings (settings/wifi-settings @db)]
+     (reaction (let [settings (-> @db :settings :wifi)]
                  (if (< index (count settings))
                    (nth settings index)
-                   {:ssid "" :password ""})))
-     (reaction (settings/wifi-settings @db)))))
+                   ^{:key (gensym)} {:ssid "" :password ""})))
+     (reaction (-> @db :settings :wifi)))))
 
 (r/register-sub
  :logs

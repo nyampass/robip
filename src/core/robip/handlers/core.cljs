@@ -28,7 +28,9 @@
   (api-request "/api/users/me"
                (fn [[ok? res]]
                  (when ok?
-                   (r/dispatch [:update-setting :wifi (-> res :user :wifi)])
+                   (r/dispatch [:update-setting :wifi
+                                (for [ssid-pass (-> res :user :wifi)]
+                                  ^{:key (gensym)} ssid-pass)])
                    (r/dispatch [:update-setting :robip-id (-> res :user :robip-id)])
                    (r/dispatch [:update-files (-> res :user :files)])
                    (r/dispatch [:update-login-state (-> res :user :id) (-> res :user :name)])))))
@@ -72,16 +74,8 @@
  :toggle-settings-pane
  [r/trim-v]
  (fn [db [shown?]]
-   (if (:app-mode? db)
-     (do
-       (try
-         (.showMenu js/appBridge)
-         (catch js/Error _))
-       db)
-     (let [db (if-not (nil? shown?)
-                (assoc db :settings-pane-shown? shown?)
-                (update db :settings-pane-shown? not))]
-       db))))
+   (.modal (js/jQuery "#settings-modal"))
+   db))
 
 (r/register-handler
  :toggle-settings-pane-web
@@ -90,7 +84,6 @@
    (if-not (nil? shown?)
      (assoc db :settings-pane-shown? shown?)
      (update db :settings-pane-shown? not))))
-
 
 (defn send-wifi-settings [db]
   (api-request "/api/users/me/wifi"
@@ -126,7 +119,8 @@
  :append-wifi-setting
  [r/trim-v]
  (fn [{{wifi :wifi} :settings :as db} []]
-   (assoc-in db [:settings :wifi] (cons {:ssid "" :password ""} wifi))))
+   (assoc-in db [:settings :wifi] (conj (vec wifi)
+                                        ^{:key (gensym)} {:ssid "" :password ""}))))
 
 (defn vec-remove
   [coll pos]
@@ -136,7 +130,8 @@
  :remove-wifi-setting
  [r/trim-v]
  (fn [{{wifi :wifi} :settings :as db} [index]]
-   (let [db (assoc-in db [:settings :wifi] (vec-remove wifi index))]
+   (let [db (assoc-in db [:settings :wifi] (vec-remove (vec wifi) index))]
+     (prn :remove-wifi-setting index (-> db :settings :wifi) (-> db :settings :wifi (nth 0) meta))
      (send-wifi-settings db)
      db)))
 

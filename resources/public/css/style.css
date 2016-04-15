@@ -29,42 +29,6 @@ app {
     text-align: right;
 }
 
-@media (max-width: 767px) {
-    .settings-menu {
-	position: relative;
-	height: 100%;
-	z-index: 1;
-    }
-    
-    #settings-pane {
-	height: 100%;
-	border: 1px solid #333;
-	color: #999;
-	background-color: #191818;
-    }
-}
-
-@media (min-width: 768px) {
-    .settings-menu {
-	position: relative;
-	min-height: 100%;
-	z-index: 1;
-    }
-    
-    #settings-pane {
-	position: absolute;
-	top: 0;
-	right: 0;
-	min-height: 100%;
-	padding: 20px 30px 0px 0px;
-	border: 1px solid #333;
-	color: #999;
-	background-color: #191818;
-	font-size: 12px;
-	text-align: right;
-    }
-}
-
 #blocky {
     position: absolute;
 }
