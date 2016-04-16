@@ -113,9 +113,10 @@
       (fn []
         [:textarea#text-editor.form-control
          {:on-change (fn [e]
-                       (when-not (:editing? @edit)
+                       (if-not (:editing? @edit)
                          (and (js/confirm "コードを編集するとブロックでの操作ができなくなります。本当に編集しますか？")
-                              (update-code e))))
+                              (update-code e))
+                         (update-code e)))
           :on-blur (fn [e]
                      (when (:editiong? @edit)
                        (update-code e)))
