@@ -50,6 +50,7 @@
    (set! (.-show-log js/window) show-log)
    (set! (.-clear-blockly js/window) clear-blockly)
    (fetch-user-info)
+   (js/setInterval #(r/dispatch [:update-file-interval]), 2000)
    (let [app-mode? (boolean (re-seq #"app.html" (.-pathname (.-location js/window))))]
      {:settings {:wifi []}
       :app-mode? app-mode?
@@ -314,12 +315,14 @@
           :edit {}
           :file-index file-index)))
 
+(defn blocky-xml []
+  (Blockly.Xml.domToText (Blockly.Xml.workspaceToDom Blockly.mainWorkspace)))
+
 (r/register-handler
  :save-file
  [r/trim-v]
  (fn [db _]
-   (let [dom (Blockly.Xml.workspaceToDom Blockly.mainWorkspace)
-         xml (Blockly.Xml.domToText dom)
+   (let [xml (blocky-xml)
          files (vec (-> db :files))
          db (assoc db :files files)
          file {:name (-> (:files db) (nth (:file-index db)) :name)
@@ -330,6 +333,27 @@
                   :params file)
      (assoc-in db [:files (:file-index db)] file))))
 
+(def latest-file (atom {:file-index -1, :xml nil}))
+
+(r/register-handler
+ :update-file-interval
+ [r/trim-v]
+ (fn [db _]
+   (if (and (:file-index db)
+            (:files db)
+            (> (count (:files db)) (:file-index db)))
+     (let [xml (blocky-xml)]
+       (if (or (not= (:file-index @latest-file) (:file-index db))
+               (not= (:xml @latest-file) xml))
+         (do
+           (reset! latest-file {:file-index (:file-index db)
+                                :xml xml})
+           (prn :a (:file-index @latest-file) (:file-index db))
+           (prn :update-file-interval )
+           (r/dispatch [:save-file])))))
+   db))
+
+ 
 (r/register-handler
  :update-files
  [r/trim-v]
