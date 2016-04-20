@@ -89,3 +89,28 @@
        [:div.modal-footer
         [:button.btn.btn-default {:data-dismiss "modal"}
          "閉じる"]]]]]))
+
+(defn server-log-pane []
+  (let [logs (r/subscribe [:server-logs])]
+    (fn []
+      [:div (map (fn [log] (list log [:br])) @logs)])))
+
+(defn server-log-modal []
+  (fn []
+    [:div#server-log-modal.modal.fade {:role "dialog" :tabIndex "-1"}
+     [:div.modal-dialog
+      [:div.modal-content
+       [:div.modal-header
+        [:h4.modal-title "ログ"]]
+       [:div.modal-body
+        [server-log-pane]]
+       [:div.modal-footer
+        [:button.btn.btn-default {:data-dismiss "modal"}
+         "閉じる"]]]]]))
+
+
+
+
+
+
+

@@ -35,11 +35,21 @@
                    (r/dispatch [:update-files (-> res :user :files)])
                    (r/dispatch [:update-login-state (-> res :user :id) (-> res :user :name)])))))
 
-(defn show-log [robip-id]
-  (api-request (str "/api/board/logs")
-               (fn [[ok? res]]
-                 (js/alert (if ok? (:logs res)
-                               "取得に失敗しました")))))
+(r/register-handler
+ :fetch-server-logs
+ (fn [db _]
+   (api-request (str "/api/board/logs")
+                (fn [[ok? res]]
+                  (if ok?
+                    (r/dispatch [:update-server-logs (:logs res)])
+                    (js/alert "取得に失敗しました"))))
+   db))
+
+(r/register-handler
+ :update-server-logs
+ [r/trim-v]
+ (fn [db [logs]]
+   (assoc db :server-logs (.split logs "\n"))))
 
 (defn gen-code [workspace]
   (.workspaceToCode Blockly.Arduino workspace))
@@ -47,7 +57,6 @@
 (r/register-handler
  :init
  (fn [_ _]
-   (set! (.-show-log js/window) show-log)
    (set! (.-clear-blockly js/window) clear-blockly)
    (fetch-user-info)
    (js/setInterval #(r/dispatch [:update-file-interval]), 2000)
@@ -226,6 +235,13 @@
    (util/log "ビルドが完了しました")
    (js/alert "ビルドが完了しました.HaLakeボードの電源を入れなおして、30秒ほどお待ち下さい")
    (assoc db :build-progress :done)))
+
+(r/register-handler
+ :server-log
+ (fn [db _]
+   (r/dispatch [:fetch-server-logs])
+   (.modal (js/jQuery "#server-log-modal"))
+   db))
 
 (r/register-handler
  :exit

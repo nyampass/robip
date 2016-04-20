@@ -38,7 +38,7 @@
          (list ^{:key 0} [:i.fa.fa-cloud] (str " ファイル:" (:name @file)))
          [:span.caret]]
         [:ul.dropdown-menu
-         (concat 
+         (concat
           [^{:key :new} [:li (wrap-link (fn [e] (r/dispatch [:new-file]))
                                         '(^{:key 0} [:i.fa.fa-plus-circle] " 新規ファイル"))]
            ^{:key :save} [:li {:key :save-file} (wrap-link (fn [e] (r/dispatch [:save-file]))
@@ -89,11 +89,17 @@
                 (assoc button-attrs :disabled "disabled")
                 (assoc button-attrs (click-handler-attr)
                        (fn [e] (r/dispatch [:build])))))
-            '([:i.fa.fa-rocket] [:b " ビルド"])]])
+            '([:i.fa.fa-paper-plane] [:b " ビルド"])]])
         ^{:key :setting}
-        [:li
-         (wrap-link (fn [e] (r/dispatch [:toggle-settings-pane]))
-                    [:i.fa.fa-ellipsis-v])])])))
+       [:li.dropdown
+        [:a.dropdown-toggle {:href "#", :data-toggle "dropdown",
+                             :role "button", :aria-haspopup "true", :aria-expanded "false"}
+         [:i.fa.fa-ellipsis-v]]
+        [:ul.dropdown-menu
+         [:li (wrap-link (fn [e] (r/dispatch [:server-log]))
+                         '([:i.fa.fa-align-left] " ログを見る"))]
+         [:li {:key :save-file} (wrap-link (fn [e] (r/dispatch [:toggle-settings-pane]))
+                                           '(^{:key 0} [:i.fa.fa-gear] " 設定"))]]])])))
 
 (defn header-menu []
   (fn []
@@ -167,6 +173,7 @@
          [:div
           [editor]
           [logging-modal]
+          [settings/server-log-modal]
           [settings/settings-modal]]])
       {:component-did-mount (fn [_]
                               (r/dispatch [:initialize-app]))})))

@@ -29,6 +29,11 @@
    (reaction (:logs @db))))
 
 (r/register-sub
+ :server-logs
+ (fn [db _]
+   (reaction (:server-logs @db))))
+
+(r/register-sub
  :settings-pane-shown?
  (fn [db _]
    (.log js/console :setttings-page-show? (:app-mode? db))
