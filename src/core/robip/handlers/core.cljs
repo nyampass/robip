@@ -280,6 +280,12 @@
                     (if (and ok?
                              (= (:status res) "ok"))
                       (do
+                        (r/dispatch [:update-setting :wifi
+                                     (for [ssid-pass (-> res :user :wifi)]
+                                       ^{:key (gensym)} ssid-pass)])
+                        (r/dispatch [:update-setting :robip-id (-> res :user :robip-id)])
+                        (r/dispatch [:update-files (-> res :user :files)])
+
                         (r/dispatch [:update-login-state (:id res) (:name res)])
                         (if dialog-show?
                           (reset! dialog-show? false)))
