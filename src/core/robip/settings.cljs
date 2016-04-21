@@ -17,12 +17,13 @@
 
 (defn setting-input-field [field-name label]
   (let [content (r/subscribe [:settings field-name])]
-    (fn [field-name placeholder]
+    (fn []
+      (prn :setting-input-field field-name @content)
       [:div.form-group
        [:label.col-sm-4.control-label {:for (name field-name)} label]
        [:div.col-sm-8
         [:input.form-control
-         {:name (name field-name) :type "text" :placeholder label
+         {:name (name field-name) :type "text" :placeholder ""
           :default-value @content
           :on-blur (fn [e]
                      (let [new-content (.. e -target -value)]
@@ -69,7 +70,7 @@
       [:div.settings-menu
        [:div#settings-pane
         [:form.form-horizontal
-         [setting-input-field :robip-id "Robip ID"]
+         ^{:key (gensym)} [setting-input-field :robip-id "Robip ID"]
          (keep-indexed (fn [i setting]
                          [setting-wifi-input-field {:index i, :setting setting}])
                        @wifi-settings)
@@ -107,10 +108,3 @@
        [:div.modal-footer
         [:button.btn.btn-default {:data-dismiss "modal"}
          "閉じる"]]]]]))
-
-
-
-
-
-
-

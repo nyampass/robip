@@ -61,7 +61,7 @@
    (fetch-user-info)
    (js/setInterval #(r/dispatch [:update-file-interval]), 2000)
    (let [app-mode? (boolean (re-seq #"app.html" (.-pathname (.-location js/window))))]
-     {:settings {:wifi []}
+     {:settings {:wifi [], :robip-id ""}
       :app-mode? app-mode?
       :build-progress :done
       :files [{:name "New file" :code ""}]
@@ -106,6 +106,7 @@
  [r/trim-v]
  (fn [db [field-name content]]
    (let [db (assoc-in db [:settings field-name] content)]
+     (prn :update-setting   [:settings field-name] content)
      (condp = field-name
        :robip-id
        (api-request "/api/users/me/robip-id"
