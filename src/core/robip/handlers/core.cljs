@@ -74,10 +74,6 @@
 (r/register-handler
  :initialize-app
  (fn [db _]
-   (if (:app-mode? db)
-     (try
-       (.init js/appBridge)
-       (catch js/Error _)))
    db))
 
 (r/register-handler
@@ -383,3 +379,15 @@
  (fn [db [files]]
    (assoc db
           :files (vals files))))
+
+(r/register-handler
+ :send-program-to-ap
+ [r/trim-v]
+ (fn [db [files]]
+   (if (-> db :settings :robip-id)
+     (try
+       (.sendProgramToAccessPoint js/appBridge (-> db :settings :robip-id))
+       (catch js/Error _))
+     (js/alert "先に[設定]からRobip IDを設定してください"))
+   db))
+

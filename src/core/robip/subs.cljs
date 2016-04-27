@@ -71,3 +71,7 @@
  (fn [db _]
    (reaction (or (:files @db) []))))
 
+(r/register-sub
+ :app-mode?
+ (fn [db _]
+   (reaction (:app-mode? @db))))

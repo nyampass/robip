@@ -67,6 +67,7 @@
 (defn menu []
   (let [build-progress (r/subscribe [:build-progress])
         workspace (r/subscribe [:workspace])
+        app-mode? (r/subscribe [:app-mode?])
         robip-id (r/subscribe [:settings :robip-id])
         edit (r/subscribe [:edit])]
     (fn []
@@ -94,8 +95,12 @@
        [:li.dropdown
         [:a.dropdown-toggle {:href "#", :data-toggle "dropdown",
                              :role "button", :aria-haspopup "true", :aria-expanded "false"}
-         [:i.fa.fa-ellipsis-v]]
+         [:i.fa.fa-bars]]
         [:ul.dropdown-menu
+         (when @app-mode?
+           [:li (wrap-link (fn [_]
+                             (r/dispatch [:send-program-to-ap]))
+                             '([:i.fa.fa-paper-plane] " 直接Kitに転送する"))])
          [:li (wrap-link (fn [e] (r/dispatch [:server-log]))
                          '([:i.fa.fa-align-left] " ログを見る"))]
          [:li {:key :save-file} (wrap-link (fn [e] (r/dispatch [:toggle-settings-pane]))

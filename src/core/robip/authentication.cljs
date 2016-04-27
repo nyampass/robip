@@ -112,13 +112,13 @@
 
 
 (defn signup []
-  (let [show? (reagent/atom false)
+  (let [show? (reagent/atom true)
         login (r/subscribe [:login])
         form-data (reagent/atom {:email ""
                                  :name ""
                                  :password ""
                                  :re-password ""})
-        save-form-data (reagent/atom nil)
+        save-form-data (reagent/atom @form-data)
         process-ok     (fn [event]
                          (r/dispatch [:signup @form-data show?])
                          false)
@@ -131,13 +131,7 @@
        :children [(if (:id @login)
                     [:a.navbar-text
                      {:style {:display "block"}}
-                     (str "" (:name @login) "さん")]
-                    [:a.navbar-text
-                     {:style {:display "block"}
-                      :on-click #(do
-                                  (reset! save-form-data @form-data)
-                                  (reset! show? true))}
-                     "Robipに参加しよう!"])
+                     (str "" (:name @login) "さん")])
                   (when @show? [modal-panel
                                 :backdrop-color "grey"
                                 :backdrop-opacity 0.4
