@@ -41,8 +41,6 @@
          (concat
           [^{:key :new} [:li (wrap-link (fn [e] (r/dispatch [:new-file]))
                                         '(^{:key 0} [:i.fa.fa-plus-circle] " 新規ファイル"))]
-           ^{:key :save} [:li {:key :save-file} (wrap-link (fn [e] (r/dispatch [:save-file]))
-                                                           '(^{:key 0} [:i.fa.fa-cloud-upload] " 保存する"))]
            [:li.divider {:role "separator"}]]
            (keep-indexed
             (fn [i file]

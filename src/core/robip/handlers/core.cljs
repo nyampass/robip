@@ -308,19 +308,18 @@
  :new-file
  [r/trim-v]
  (fn [{files :files :as db} _]
-   (let [filename (js/prompt "ファイル名を入力してください")
-         filename (if (and filename (seq filename))
-                    filename
-                    "New File")
-         files (conj files {:name filename, :xml nil})]
-     (clear-blockly)
-     (assoc db
-            :files files
-            :file-index (-> files count dec)
-            :view :block
-            :edit {}))))
- 
-
+   (if-let [filename (js/prompt "ファイル名を入力してください")]
+     (let [filename (if (seq filename)
+                      filename
+                      "New File")
+           files (conj files {:name filename, :xml nil})]
+       (clear-blockly)
+       (assoc db
+              :files files
+              :file-index (-> files count dec)
+              :view :block
+              :edit {}))
+     db)))
 
 (r/register-handler
  :load-file
