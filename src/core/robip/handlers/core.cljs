@@ -24,17 +24,18 @@
                                 :format (ajax/json-request-format)))]
     (ajax/ajax-request request)))
 
+(defn update-info [user]
+  (r/dispatch [:update-setting :wifi (-> user :wifi)])
+  (r/dispatch [:update-setting :robip-id (-> user :robip-id)])
+  (r/dispatch [:update-files (-> user :files)])
+  (r/dispatch [:update-login-state (-> user :id) (-> user :name)])
+  (r/dispatch [:load-file 0]))
+
 (defn fetch-user-info []
   (api-request "/api/users/me"
                (fn [[ok? res]]
                  (when ok?
-                   (r/dispatch [:update-setting :wifi
-                                (for [ssid-pass (-> res :user :wifi)]
-                                  ^{:key (gensym)} ssid-pass)])
-                   (r/dispatch [:update-setting :robip-id (-> res :user :robip-id)])
-                   (r/dispatch [:update-files (-> res :user :files)])
-                   (r/dispatch [:update-login-state (-> res :user :id) (-> res :user :name)])))))
-
+                   (update-info (-> res :user))))))
 (r/register-handler
  :fetch-server-logs
  (fn [db _]
@@ -57,9 +58,8 @@
 (r/register-handler
  :init
  (fn [_ _]
-   (set! (.-clear-blockly js/window) clear-blockly)
    (fetch-user-info)
-   (js/setInterval #(r/dispatch [:update-file-interval]), 2000)
+   (js/setInterval #(r/dispatch [:auto-save]), 2000)
    (let [app-mode? (boolean (re-seq #"app.html" (.-pathname (.-location js/window))))]
      {:settings {:wifi [], :robip-id ""}
       :app-mode? app-mode?
@@ -165,6 +165,7 @@
 (defn clear-blockly
   ([] (clear-blockly initial-blocks-xml))
   ([xml-code]
+   (prn :clear-blockly xml-code)
    (.clear Blockly.mainWorkspace)
    (let [xml (Blockly.Xml.textToDom xml-code)]
      (Blockly.Xml.domToWorkspace Blockly.mainWorkspace xml))))
@@ -173,6 +174,7 @@
  :after-editor-mount
  [r/trim-v]
  (fn [db [view]]
+   (prn :after-editor-mount )
    (let [opts #js{:toolbox (.getElementById js/document "toolbox")
                   :zoom {:wheel false
                          :startScale 1.0
@@ -276,13 +278,7 @@
                     (if (and ok?
                              (= (:status res) "ok"))
                       (do
-                        (r/dispatch [:update-setting :wifi
-                                     (for [ssid-pass (-> res :user :wifi)]
-                                       ^{:key (gensym)} ssid-pass)])
-                        (r/dispatch [:update-setting :robip-id (-> res :user :robip-id)])
-                        (r/dispatch [:update-files (-> res :user :files)])
-
-                        (r/dispatch [:update-login-state (:id res) (:name res)])
+                        (update-info (:user res))
                         (if dialog-show?
                           (reset! dialog-show? false)))
                       (js/alert "ログインできませんでした。メールアドレスとパスワードを確認してください")))
@@ -325,6 +321,7 @@
  :load-file
  [r/trim-v]
  (fn [db [file-index]]
+   (prn :load-file)
    (clear-blockly (-> (:files db)
                       (nth file-index)
                       :xml))
@@ -341,7 +338,7 @@
  [r/trim-v]
  (fn [db _]
    (let [xml (blocky-xml)
-         files (vec (-> db :files))
+         files (-> db :files vec)
          db (assoc db :files files)
          file {:name (-> (:files db) (nth (:file-index db)) :name)
                :xml xml}]
@@ -351,33 +348,37 @@
                   :params file)
      (assoc-in db [:files (:file-index db)] file))))
 
-(def latest-file (atom {:file-index -1, :xml nil}))
+(def latest-save-file (atom {:file-index -1
+                             :xml nil}))
 
 (r/register-handler
- :update-file-interval
+ :auto-save
  [r/trim-v]
  (fn [db _]
    (if (and (:file-index db)
             (:files db)
             (> (count (:files db)) (:file-index db)))
      (let [xml (blocky-xml)]
-       (if (or (not= (:file-index @latest-file) (:file-index db))
-               (not= (:xml @latest-file) xml))
+       (prn :auto-save
+            (:file-index @latest-save-file) (:file-index db)
+            (:xml @latest-save-file) xml
+            (not= (:file-index @latest-save-file) (:file-index db))
+            (not= (:xml @latest-save-file) xml))
+       (if (or (not= (:file-index @latest-save-file) (:file-index db))
+               (not= (:xml @latest-save-file) xml))
          (do
-           (reset! latest-file {:file-index (:file-index db)
-                                :xml xml})
-           (prn :a (:file-index @latest-file) (:file-index db))
-           (prn :update-file-interval )
+           (reset! latest-save-file {:file-index (:file-index db)
+                                     :xml xml})
            (r/dispatch [:save-file])))))
    db))
 
- 
 (r/register-handler
  :update-files
  [r/trim-v]
  (fn [db [files]]
-   (assoc db
-          :files (vals files))))
+   (let [files (vals files)]
+     (assoc db
+            :files files))))
 
 (r/register-handler
  :send-program-to-ap
