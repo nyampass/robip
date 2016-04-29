@@ -20,8 +20,8 @@
     (fn []
       (prn :setting-input-field field-name @content)
       [:div.form-group
-       [:label.col-sm-4.control-label {:for (name field-name)} label]
-       [:div.col-sm-8
+       [:label.col-sm-3.control-label {:for (name field-name)} label]
+       [:div.col-sm-9
         [:input.form-control
          {:name (name field-name) :type "text" :placeholder ""
           :default-value @content
@@ -34,44 +34,42 @@
         ssid-field-name (str "wifi-ssid-" index)
         password-field-name (str "wifi-password-" index)]
     (fn []
-      [:div
-       [:div.form-group {:key (-> setting meta :key)}
-        [:div.col-sm-4.control-label
-         [:label {:for ssid-field-name} (str "Wifi SSID(" (inc index) ")")]
-         ]
-        [:div.col-sm-8
+      ^{:key (-> setting :key)}
+      [:div.div.form-group
+       [:div.col-sm-3.control-label
+        [:label {:for ssid-field-name} (str "Wifi(" (inc index) ")")]]
+       [:div.col-sm-9.form-inline
+        [:div.form-group
          [:input.form-control
-          {:name ssid-field-name :type "text" :placeholder ""
+          {:name ssid-field-name :type "text" :placeholder "SSID"
            :default-value (:ssid setting)
            :on-blur (fn [e]
                       (let [new-content (.. e -target -value)]
                         (r/dispatch [:update-wifi-setting :ssid index
-                                      new-content])))}]]]
-       [:div.form-group
-        [:div.col-sm-4.control-label
-         [:label {:for password-field-name} (str "パスワード(" (inc index) ")")]]
-        [:div.col-sm-8
+                                     new-content])))}]]
+        [:div.form-group
          [:input.form-control
-          {:name password-field-name :type "text" :placeholder ""
+          {:name password-field-name :type "text" :placeholder "パスワード"
            :default-value (:password setting)
            :on-blur (fn [e]
                       (let [new-content (.. e -target -value)]
                         (r/dispatch [:update-wifi-setting :password index
-                                     new-content])))}]
-         (when (= (inc index) (count @wifi-settings))
-           [:input.btn
-            {:type "button" :value "x"
-             :on-click (fn [e]
-                         (r/dispatch [:remove-wifi-setting index]))}])]]])))
+                                     new-content])))}]]
+        [:div.form-group
+         [:input.btn
+          {:type "button" :value "x"
+           :on-click (fn [e]
+                       (r/dispatch [:remove-wifi-setting index]))}]]]])))
 
 (defn settings-pane []
   (let [wifi-settings (r/subscribe [:wifi-settings])]
     (fn []
       [:div.settings-menu
        [:div#settings-pane
-        [:form.form-horizontal
+        [:form
          ^{:key (gensym)} [setting-input-field :robip-id "Robip ID"]
          (keep-indexed (fn [i setting]
+                         ^{:key (str (-> setting :key) "-" i)}
                          [setting-wifi-input-field {:index i, :setting setting}])
                        @wifi-settings)
          [:input.btn.btn-default {:type "button" :value "Wifiの追加"

@@ -25,7 +25,8 @@
     (ajax/ajax-request request)))
 
 (defn update-info [user]
-  (r/dispatch [:update-setting :wifi (-> user :wifi)])
+  (r/dispatch [:update-setting :wifi (for [setting (-> user :wifi)]
+                                       (assoc setting :key (gensym)))])
   (r/dispatch [:update-setting :robip-id (-> user :robip-id)])
   (r/dispatch [:update-files (-> user :files)])
   (r/dispatch [:update-login-state (-> user :id) (-> user :name)])
@@ -123,7 +124,6 @@
  :update-wifi-setting
  [r/trim-v]
  (fn [db [key index content]]
-   (prn :update-wifi-setting (-> db :settings :wifi) index content key)
    (let [wifi (assoc-in (vec (-> db :settings :wifi)) [index key] content)
          db (assoc-in db [:settings :wifi] wifi)]
      (send-wifi-settings db)
@@ -134,7 +134,8 @@
  [r/trim-v]
  (fn [{{wifi :wifi} :settings :as db} []]
    (assoc-in db [:settings :wifi] (conj (vec wifi)
-                                        ^{:key (gensym)} {:ssid "" :password ""}))))
+                                        {:ssid "" :password ""
+                                         :key (gensym)}))))
 
 (defn vec-remove
   [coll pos]
