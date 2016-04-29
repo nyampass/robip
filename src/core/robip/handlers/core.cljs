@@ -170,10 +170,10 @@
        "<block type=\"entry_point\" id=\"0\" x=\"30\" y=\"20\"></block>"
        "</xml>"))
 
-(defn clear-blockly
-  ([] (clear-blockly initial-blocks-xml))
+(defn inject-blockly
+  ([] (inject-blockly initial-blocks-xml))
   ([xml-code]
-   (prn :clear-blockly xml-code)
+   (prn :inject-blockly xml-code)
    (.clear Blockly.mainWorkspace)
    (let [xml (Blockly.Xml.textToDom xml-code)]
      (Blockly.Xml.domToWorkspace Blockly.mainWorkspace xml))))
@@ -317,7 +317,7 @@
                       filename
                       "New File")
            files (conj files {:name filename, :xml nil})]
-       (clear-blockly)
+       (inject-blockly)
        (assoc db
               :files files
               :file-index (-> files count dec)
@@ -362,14 +362,22 @@
  :load-file
  [r/trim-v]
  (fn [db [file-index]]
-   (if-let [code (-> (:files db)
-                     (nth file-index)
-                     :xml)]
-     (clear-blockly code))
-   (assoc db
-          :view :block
-          :edit {}
-          :file-index file-index)))
+   (let [file (-> (:files db) (nth file-index))
+         xml (:xml file)
+         code (:code file)]
+     (if code
+       (assoc db
+              :view :code
+              :edit {:code code :caret 0 :editing? true}
+              :file-index file-index)
+       (do
+         (if xml
+           (inject-blockly xml)
+           (inject-blockly))
+         (assoc db
+                :view :block
+                :edit {}
+                :file-index file-index))))))
 
 (defn blocky-xml []
   (Blockly.Xml.domToText (Blockly.Xml.workspaceToDom Blockly.mainWorkspace)))
@@ -378,11 +386,16 @@
  :save-file
  [r/trim-v]
  (fn [db _]
-   (let [xml (blocky-xml)
+   (let [block-mode? (-> db :edit :editing? not)
+         xml (if block-mode?
+               (blocky-xml))
+         code (if-not block-mode?
+                (-> db :edit :code))
          files (-> db :files vec)
          db (assoc db :files files)
          file {:name (-> (:files db) (nth (:file-index db)) :name)
-               :xml xml}]
+               :xml xml,
+               :code code}]
      (api-request (str "/api/users/me/files/" (:file-index db))
                   (fn [[ok? res]])
                   :method :put
@@ -390,6 +403,7 @@
      (assoc-in db [:files (:file-index db)] file))))
 
 (def latest-save-file (atom {:file-index -1
+                             :code nil
                              :xml nil}))
 
 (r/register-handler
@@ -400,13 +414,17 @@
             (:files db)
             (> (count (:files db)) (:file-index db)))
      (let [name (-> db :files (nth (:file-index db) :name))
-           xml (blocky-xml)]
+           block-mode? (-> db :edit :editing? not)
+           code (if-not block-mode? (-> db :edit :code))
+           xml (if block-mode? (blocky-xml))]
        (if (or (not= (:file-index @latest-save-file) (:file-index db))
                (not= (:name @latest-save-file) name)
+               (not= (:code @latest-save-file) code)
                (not= (:xml @latest-save-file) xml))
          (do
            (reset! latest-save-file {:file-index (:file-index db)
                                      :name name
+                                     :code code
                                      :xml xml})
            (r/dispatch [:save-file])))))
    db))

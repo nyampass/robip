@@ -34,7 +34,6 @@
         ssid-field-name (str "wifi-ssid-" index)
         password-field-name (str "wifi-password-" index)]
     (fn []
-      ^{:key (-> setting :key)}
       [:div.div.form-group
        [:div.col-sm-3.control-label
         [:label {:for ssid-field-name} (str "Wifi(" (inc index) ")")]]
