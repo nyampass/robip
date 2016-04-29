@@ -6,53 +6,9 @@
             [re-com.modal-panel :refer [modal-panel-args-desc]]
             [reagent.core :as reagent]))
 
-(defn please-wait-message
-  []
-  (let [show? (reagent/atom false)]
-    (fn []
-      [v-box
-       :children [[button
-                   :label    "Please wait message"
-                   :class    "btn-info"
-                   :on-click (fn []
-                               (reset! show? true)
-                               (js/setTimeout #(reset! show? false) 3000))]
-                  (when @show?
-                    [modal-panel
-                     :backdrop-on-click #(reset! show? false)
-                     :child             [:span "Please wait for 3 seconds" [:br] "(or click on backdrop)"]])]])))
-
-(defn progress-bar-with-cancel-button
-  []
-  (let [show? (reagent/atom false)]
-    (fn []
-      [v-box
-       :children [[button
-                   :label    "Progress bar with cancel button"
-                   :class    "btn-info"
-                   :on-click #(reset! show? true)]
-                  (when @show?
-                    [modal-panel
-                     :backdrop-on-click #(reset! show? false)
-                     :child [v-box
-                             :width    "300px"
-                             :children [[title :level :level2 :label "Recalculating..."]
-                                        [gap :size "20px"]
-                                        [progress-bar
-                                         :model 33]
-                                        [gap :size "10px"]
-                                        [h-box
-                                         :children [[button
-                                                     :label    "Cancel"
-                                                     :class    "btn-danger"
-                                                     :style    {:margin-right "15px"}
-                                                     :on-click #(reset! show? false)]
-                                                    [:span "pretend only, click Cancel" [:br] "(or click on backdrop)"]]]]]])]])))
-
 (defn signup-dialog-markup
   [form-data process-ok process-cancel]
   [v-box
-   :padding  "5px"
    :children [[title :label "Robipへの参加しよう！" :level :level2]
               [label :label [:p "登録いただくことで、PC、スマホ間でプログラムを引き継ぐことができます"
                              [:br] "メールアドレスには保護者の方のアドレスを入れてください"]]
@@ -142,45 +98,44 @@
 
 (defn login-dialog-markup
   [form-data process-ok process-cancel]
-  [border
-   :child  [v-box
-            :padding  "5px"
-            :children [[title :label "Robipへログイン！" :level :level2]
-                       [:a.btn.btn-large.btn-facebook {:href (str "/login/facebook/"
-                                                                  (if (re-seq #"app.html" (.-pathname (.-location js/window)))
-                                                                    "app"
-                                                                    "default"))}
-                        [:i.fa.fa-facebook-official] " Facebookログイン"]
-
-                       [:button.btn.btn-link {:style {"color" "#23527c"}
-                                              :on-click (fn [e]
-                                                         (r/dispatch [:change-authentication-mode :signup]))}
-                        "アカウントをお持ちでない方はこちらから作成してください"]
-                       [v-box
-                        :class    "form-group"
-                        :children [[:label {:for "pf-email"} "メールアドレス"]
-                                   [input-text
-                                    :model       (:email @form-data)
-                                    :on-change   #(swap! form-data assoc :email %)
-                                    :placeholder ""
-                                    :class       "form-control"
-                                    :attr        {:id "pf-email"}]]]
-                       [v-box
-                        :class    "form-group"
-                        :children [[:label {:for "pf-password"} "パスワード"]
-                                   [input-text
-                                    :model       (:password @form-data)
-                                    :on-change   #(swap! form-data assoc :password %)
-                                    :placeholder ""
-                                    :class       "form-control"
-                                    :attr        {:id "pf-password" :type "password"}]]]
-                       [line :color "#ddd" :style {:margin "10px 0 10px"}]
-                       [h-box
-                        :gap      "12px"
-                        :children [[button
-                                    :label    "ログインする"
-                                    :class    "btn btn-primary"
-                                    :on-click process-ok]]]]]])
+  [v-box
+   :class "form-horizontal"
+   :children [[title :label "Robipへログイン！" :level :level3]
+              [:a.btn.btn-large.btn-facebook {:href (str "/login/facebook/"
+                                                         (if (re-seq #"app.html" (.-pathname (.-location js/window)))
+                                                           "app"
+                                                           "default"))}
+               [:i.fa.fa-facebook-official] " Facebookログイン"]
+              
+              [:button.btn.btn-link {:style {"color" "#23527c"}
+                                     :on-click (fn [e]
+                                                 (r/dispatch [:change-authentication-mode :signup]))}
+               "アカウントをお持ちでない方はこちらから作成してください"]
+              [:div.form-group
+               [:div.col-sm-3.control-label
+                [:label {:for "email"} "ID"]]
+               [:div.col-sm-9
+                [input-text
+                 :model       (:email @form-data)
+                 :on-change   #(swap! form-data assoc :email %)
+                 :placeholder ""
+                 :class       "form-control"
+                 :attr        {:id "email"}]]]
+              [:div.form-group
+               [:div.col-sm-3.control-label
+                [:label {:for "password"} "パスワード"]]
+               [:div.col-sm-9
+                [input-text
+                 :model       (:password @form-data)
+                 :on-change   #(swap! form-data assoc :password %)
+                 :placeholder ""
+                 :class       "control"
+                 :attr        {:id "pf-password" :type "password"}]]]
+              [h-box
+               :children [[button
+                           :label    "ログインする"
+                           :class    "btn btn-primary"
+                           :on-click process-ok]]]]])
 
 (defn login []
   (let [login (r/subscribe [:login])
