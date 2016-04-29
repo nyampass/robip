@@ -317,7 +317,7 @@
                       filename
                       "New File")
            files (conj files {:name filename, :xml nil})]
-       (inject-blockly)
+       (js/setTimeout #(inject-blockly), 100)
        (assoc db
               :files files
               :file-index (-> files count dec)
@@ -371,9 +371,9 @@
               :edit {:code code :caret 0 :editing? true}
               :file-index file-index)
        (do
-         (if xml
-           (inject-blockly xml)
-           (inject-blockly))
+         (js/setTimeout #(if xml
+                           (inject-blockly xml)
+                           (inject-blockly)), 100)
          (assoc db
                 :view :block
                 :edit {}
