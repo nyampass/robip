@@ -325,10 +325,24 @@
      db)))
 
 (r/register-handler
+ :rename-file
+ [r/trim-v]
+ (fn [{:keys [files file-index] :as db} _]
+   (if-let [filename (js/prompt "新しいファイル名を入力してください")]
+     (if (seq filename)
+       (do
+         (let [file (nth files file-index)
+               files (assoc (vec files) file-index
+                            (assoc file :name filename))]
+           (assoc db
+                  :files files)))
+       db)
+     db)))
+
+(r/register-handler
  :load-file
  [r/trim-v]
  (fn [db [file-index]]
-   (prn :load-file)
    (if-let [code (-> (:files db)
                      (nth file-index)
                      :xml)]
@@ -366,19 +380,18 @@
    (if (and (:file-index db)
             (:files db)
             (> (count (:files db)) (:file-index db)))
-     (let [xml (blocky-xml)]
-       (prn :auto-save
-            (:file-index @latest-save-file) (:file-index db)
-            (:xml @latest-save-file) xml
-            (not= (:file-index @latest-save-file) (:file-index db))
-            (not= (:xml @latest-save-file) xml))
+     (let [name (-> db :files (nth (:file-index db) :name))
+           xml (blocky-xml)]
        (if (or (not= (:file-index @latest-save-file) (:file-index db))
+               (not= (:name @latest-save-file) name)
                (not= (:xml @latest-save-file) xml))
          (do
            (reset! latest-save-file {:file-index (:file-index db)
+                                     :name name
                                      :xml xml})
            (r/dispatch [:save-file])))))
    db))
+
 
 (r/register-handler
  :update-files

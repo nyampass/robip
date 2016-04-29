@@ -41,6 +41,10 @@
          (concat
           [^{:key :new} [:li (wrap-link (fn [e] (r/dispatch [:new-file]))
                                         '(^{:key 0} [:i.fa.fa-plus-circle] " 新規ファイル"))]
+           ^{:key :rename} [:li (wrap-link (fn [e] (r/dispatch [:rename-file]))
+                                           '(^{:key 0} [:i.fa.fa-refresh] " ファイルの名前を変える"))]
+           ^{:key :delete} [:li (wrap-link (fn [e] (r/dispatch [:delete-file]))
+                                           '(^{:key 0} [:i.fa.fa-trash] " ファイルを削除する"))]
            [:li.divider {:role "separator"}]]
            (keep-indexed
             (fn [i file]
@@ -101,8 +105,8 @@
                              '([:i.fa.fa-paper-plane] " 直接Kitに転送する"))])
          [:li (wrap-link (fn [e] (r/dispatch [:server-log]))
                          '([:i.fa.fa-align-left] " ログを見る"))]
-         [:li {:key :save-file} (wrap-link (fn [e] (r/dispatch [:toggle-settings-pane]))
-                                           '(^{:key 0} [:i.fa.fa-gear] " 設定"))]]])])))
+         [:li {:key :settings} (wrap-link (fn [e] (r/dispatch [:toggle-settings-pane]))
+                                          '(^{:key 0} [:i.fa.fa-gear] " 設定"))]]])])))
 
 (defn header-menu []
   (fn []
