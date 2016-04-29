@@ -69,7 +69,8 @@
       :view :block
       :edit {}
       :logs ""
-      :login {}})))
+      :login {}
+      :authentication-mode :login})))
 
 (r/register-handler
  :initialize-app
@@ -82,6 +83,12 @@
  (fn [db [shown?]]
    (.modal (js/jQuery "#settings-modal"))
    db))
+
+(r/register-handler
+ :change-authentication-mode
+ [r/trim-v]
+ (fn [db [mode]]
+   (assoc db :authentication-mode mode)))
 
 (r/register-handler
  :toggle-settings-pane-web
@@ -251,7 +258,7 @@
 (r/register-handler
  :signup
  [r/trim-v]
- (fn [db [{:keys [email name password re-password] :as form} dialog-show?]]
+ (fn [db [{:keys [email name password re-password] :as form}]]
    (cond
      (not (seq email)) (js/alert "メールアドレスを入力してください")
      (not (seq name)) (js/alert "ユーザ名を入力してください")
@@ -263,7 +270,7 @@
                     (js/alert (:message res))
                     (when (and ok?
                                (= (:status res) "ok"))
-                      (reset! dialog-show? false)
+                      (r/dispatch [:change-authentication-mode :authorized])
                       (r/dispatch [:login email password])))
                   :method :post
                   :params form))
@@ -272,15 +279,14 @@
 (r/register-handler
   :login
   [r/trim-v]
-  (fn [db [email password dialog-show?]]
+  (fn [db [email password]]
      (api-request "/api/login"
                   (fn [[ok? res]]
                     (if (and ok?
                              (= (:status res) "ok"))
                       (do
                         (update-info (:user res))
-                        (if dialog-show?
-                          (reset! dialog-show? false)))
+                        (r/dispatch [:change-authentication-mode :authorized]))
                       (js/alert "ログインできませんでした。メールアドレスとパスワードを確認してください")))
                   :method :post
                   :params {:email email :password password})
@@ -298,6 +304,7 @@
   (fn [db _]
     (api-request (str "/api/logout")
                  (fn [[ok? res]]))
+    (r/dispatch [:change-authentication-mode :login])
     (dissoc db :login {})))
 
 (r/register-handler
@@ -322,9 +329,10 @@
  [r/trim-v]
  (fn [db [file-index]]
    (prn :load-file)
-   (clear-blockly (-> (:files db)
-                      (nth file-index)
-                      :xml))
+   (if-let [code (-> (:files db)
+                     (nth file-index)
+                     :xml)]
+     (clear-blockly code))
    (assoc db
           :view :block
           :edit {}

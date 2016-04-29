@@ -75,3 +75,8 @@
  :app-mode?
  (fn [db _]
    (reaction (:app-mode? @db))))
+
+(r/register-sub
+ :authentication-mode
+ (fn [db _]
+   (reaction (:authentication-mode @db))))

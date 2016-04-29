@@ -22,7 +22,6 @@
                      :backdrop-on-click #(reset! show? false)
                      :child             [:span "Please wait for 3 seconds" [:br] "(or click on backdrop)"]])]])))
 
-
 (defn progress-bar-with-cancel-button
   []
   (let [show? (reagent/atom false)]
@@ -49,7 +48,6 @@
                                                      :style    {:margin-right "15px"}
                                                      :on-click #(reset! show? false)]
                                                     [:span "pretend only, click Cancel" [:br] "(or click on backdrop)"]]]]]])]])))
-
 
 (defn signup-dialog-markup
   [form-data process-ok process-cancel]
@@ -110,9 +108,8 @@
                            :label    "キャンセル"
                            :on-click process-cancel]]]]])
 
-
 (defn signup []
-  (let [show? (reagent/atom true)
+  (let [authentication-mode (r/subscribe [:authentication-mode])
         login (r/subscribe [:login])
         form-data (reagent/atom {:email ""
                                  :name ""
@@ -124,7 +121,7 @@
                          false)
         process-cancel (fn [event]
                          (reset! form-data @save-form-data)
-                         (reset! show? false)
+                         (r/dispatch [:change-authentication-mode :login])
                          false)]
     (fn []
       [v-box
@@ -132,7 +129,7 @@
                     [:a.navbar-text
                      {:style {:display "block"}}
                      (str "" (:name @login) "さん")])
-                  (when @show? [modal-panel
+                  (when (= @authentication-mode :signup) [modal-panel
                                 :backdrop-color "grey"
                                 :backdrop-opacity 0.4
                                 :child [scroller
@@ -155,6 +152,10 @@
                                                                     "default"))}
                         [:i.fa.fa-facebook-official] " Facebookログイン"]
 
+                       [:button.btn.btn-link {:style {"color" "#23527c"}
+                                              :on-click (fn [e]
+                                                         (r/dispatch [:change-authentication-mode :signup]))}
+                        "アカウントをお持ちでない方はこちらから作成してください"]
                        [v-box
                         :class    "form-group"
                         :children [[:label {:for "pf-email"} "メールアドレス"]
@@ -179,42 +180,31 @@
                         :children [[button
                                     :label    "ログインする"
                                     :class    "btn btn-primary"
-                                    :on-click process-ok]
-                                   [button
-                                    :label    "キャンセル"
-                                    :on-click process-cancel]]]]]])
+                                    :on-click process-ok]]]]]])
 
 (defn login []
   (let [login (r/subscribe [:login])
-        show? (reagent/atom false)
+        authentication-mode (r/subscribe [:authentication-mode])
         form-data (reagent/atom {:email ""
                                  :password ""})
         save-form-data (reagent/atom nil)
         process-ok     (fn [event]
-                         (r/dispatch [:login (:email @form-data) (:password @form-data) show?])
-                         (reset! show? false)
+                         (r/dispatch [:login (:email @form-data) (:password @form-data)])
                          false)
         process-cancel (fn [event]
                          (reset! form-data @save-form-data)
-                         (reset! show? false)
                          false)]
     (fn []
       [v-box
-       :children [(if-not (:id @login)
-                    [button
-                     :label "ログイン"
-                     :class "btn navbar-btn btn-default"
-                     :on-click #(do
-                                  (reset! save-form-data @form-data)
-                                  (reset! show? true))]
+       :children [(if (:id @login)
                     [button
                      :label "ログアウト"
                      :class "btn navbar-btn btn-default btn-link"
                      :on-click #(r/dispatch [:logout])])
-                  (when @show? [modal-panel
+                  (when (= @authentication-mode :login) [modal-panel
                                 :backdrop-color "grey"
                                 :backdrop-opacity 0.4
                                 :child [login-dialog-markup
                                         form-data
-                                        process-ok
-                                        process-cancel]])]])))
+                                        process-ok]])]])))
+
