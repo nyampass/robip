@@ -78,7 +78,7 @@
         ^{:key :signup}
         [:li
          [auth/signup]]
-        ^{:key login}
+        ^{:key :login}
         [:li
          [auth/login]]
         (let [disabled? (or (not= @build-progress :done) (empty? @robip-id))]

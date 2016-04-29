@@ -29,13 +29,15 @@
   (r/dispatch [:update-setting :robip-id (-> user :robip-id)])
   (r/dispatch [:update-files (-> user :files)])
   (r/dispatch [:update-login-state (-> user :id) (-> user :name)])
-  (r/dispatch [:load-file 0]))
+  (r/dispatch [:load-file 0])
+  (js/setInterval #(r/dispatch [:auto-save]), 2000))
 
 (defn fetch-user-info []
   (api-request "/api/users/me"
                (fn [[ok? res]]
                  (when ok?
                    (update-info (-> res :user))))))
+
 (r/register-handler
  :fetch-server-logs
  (fn [db _]
@@ -58,8 +60,6 @@
 (r/register-handler
  :init
  (fn [_ _]
-   (fetch-user-info)
-   (js/setInterval #(r/dispatch [:auto-save]), 2000)
    (let [app-mode? (boolean (re-seq #"app.html" (.-pathname (.-location js/window))))]
      {:settings {:wifi [], :robip-id ""}
       :app-mode? app-mode?
@@ -340,6 +340,24 @@
      db)))
 
 (r/register-handler
+ :delete-file
+ [r/trim-v]
+ (fn [{:keys [files file-index] :as db} _]
+   (let [file (nth files file-index)]
+     (if (js/confirm (str "ファイル\"" (:name file) "\"を削除します。よろしいですか？"))
+       (let [files (vec-remove (vec files) file-index)]
+         (reset! latest-save-file  {:file-index -1
+                                    :xml nil})
+         (api-request "/api/users/me/files"
+                      (fn [[ok? res]]
+                        (r/dispatch [:load-file 0]))
+                      :method :put
+                      :params {:files files})
+         (assoc db
+                :files files))
+       db))))
+
+(r/register-handler
  :load-file
  [r/trim-v]
  (fn [db [file-index]]
@@ -397,9 +415,8 @@
  :update-files
  [r/trim-v]
  (fn [db [files]]
-   (let [files (vals files)]
-     (assoc db
-            :files files))))
+   (assoc db
+          :files files)))
 
 (r/register-handler
  :send-program-to-ap
