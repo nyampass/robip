@@ -24,6 +24,8 @@
                                 :format (ajax/json-request-format)))]
     (ajax/ajax-request request)))
 
+(def info-updated? (atom false))
+
 (defn update-info [user]
   (r/dispatch [:update-setting :wifi (for [setting (-> user :wifi)]
                                        (assoc setting :key (gensym)))])
@@ -31,12 +33,15 @@
   (r/dispatch [:update-files (-> user :files)])
   (r/dispatch [:update-login-state (-> user :id) (-> user :name)])
   (r/dispatch [:load-file 0])
-  (js/setInterval #(r/dispatch [:auto-save]), 2000))
+  (when-not @info-updated?
+    (js/setInterval #(r/dispatch [:auto-save]), 2000)
+    (reset! info-updated? true)))
 
 (defn fetch-user-info []
   (api-request "/api/users/me"
                (fn [[ok? res]]
-                 (when ok?
+                 (when (and ok? (= (:status res) "ok") (:user res))
+                   (r/dispatch [:change-authentication-mode :authorized])
                    (update-info (-> res :user))))))
 
 (r/register-handler
@@ -61,6 +66,7 @@
 (r/register-handler
  :init
  (fn [_ _]
+   (fetch-user-info)
    (let [app-mode? (boolean (re-seq #"app.html" (.-pathname (.-location js/window))))]
      {:settings {:wifi [], :robip-id ""}
       :app-mode? app-mode?
@@ -442,10 +448,13 @@
 (r/register-handler
  :send-program-to-ap
  [r/trim-v]
- (fn [db [files]]
+ (fn [db _]
+   (prn :send-program-to-ap (-> db :settings :robip-id))
    (if (-> db :settings :robip-id)
      (try
        (.sendProgramToAccessPoint js/appBridge (-> db :settings :robip-id))
-       (catch js/Error _))
+       (catch js/Error e
+         (prn :error e)))
      (js/alert "先に[設定]からRobip IDを設定してください"))
    db))
+

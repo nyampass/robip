@@ -110,7 +110,7 @@
 
 (defn header-menu []
   (fn []
-    [:nav.navbar.navbar-default
+    [:nav.navbar.navbar-default {:style {:z-index "500"}}
      [:div.container-fluid
       [:div#navbar-collapse.collapse.navbar-collapse.off
        [view-selector]
