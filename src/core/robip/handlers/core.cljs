@@ -435,7 +435,9 @@
  [r/trim-v]
  (fn [db [files]]
    (assoc db
-          :files files)))
+          :files (if (map? files)
+                   (vals files)
+                   files))))
 
 (r/register-handler
  :send-program-to-ap
@@ -447,4 +449,3 @@
        (catch js/Error _))
      (js/alert "先に[設定]からRobip IDを設定してください"))
    db))
-

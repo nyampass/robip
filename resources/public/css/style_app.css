@@ -125,3 +125,8 @@ float: right!important;
   background-image: linear-gradient(#42589d, #334479);
   border: 1px solid #2d4070;
 }
+
+#signup-dialog .modal-body, #login-dialog .modal-body {
+    max-height: 200px;
+    overflow-y: auto;
+}
