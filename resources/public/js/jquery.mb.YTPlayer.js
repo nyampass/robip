@@ -236,7 +236,7 @@ function onYouTubePlayerAPIReady() {
 
 				if(!ytp.YTAPIReady){
 					var tag = document.createElement('script');
-					tag.src = "http://www.youtube.com/player_api";
+					tag.src = "//www.youtube.com/player_api";
 					tag.id = "YTAPI";
 					var firstScriptTag = document.getElementsByTagName('script')[0];
 					firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
@@ -486,7 +486,7 @@ function onYouTubePlayerAPIReady() {
 			YTPlayer.videoID = videoID;
 			if (!jQuery.browser.msie) { //!(jQuery.browser.msie && jQuery.browser.version<9)
 
-				jQuery.getJSON('http://gdata.youtube.com/feeds/api/videos/' + videoID + '?v=2&alt=jsonc', function (data, status, xhr) {
+				jQuery.getJSON('//gdata.youtube.com/feeds/api/videos/' + videoID + '?v=2&alt=jsonc', function (data, status, xhr) {
 
 					YTPlayer.dataReceived = true;
 
@@ -594,7 +594,7 @@ function onYouTubePlayerAPIReady() {
 
 			jQuery(YTPlayer).pauseYTP();
 			var timer = jQuery.browser.msie ? 1000 : 0;
-			jQuery(YTPlayer).getPlayer().cueVideoByUrl(encodeURI("http://www.youtube.com/v/" + YTPlayer.videoID) , 5 , YTPlayer.opt.quality);
+			jQuery(YTPlayer).getPlayer().cueVideoByUrl(encodeURI("https://www.youtube.com/v/" + YTPlayer.videoID) , 5 , YTPlayer.opt.quality);
 
 			setTimeout(function(){
 				jQuery(YTPlayer).playYTP();
@@ -864,7 +864,7 @@ function onYouTubePlayerAPIReady() {
 
 			var vURL = data.videoURL;
 			if(vURL.indexOf("http") < 0)
-				vURL = "http://www.youtube.com/watch?v="+data.videoURL;
+				vURL = "https://www.youtube.com/watch?v="+data.videoURL;
 			var movieUrl = jQuery("<span/>").html(jQuery.mbYTPlayer.controls.ytLogo).addClass("mb_YTVPUrl ytpicon").attr("title", "view on YouTube").on("click", function () {window.open(vURL, "viewOnYT")});
 			var onlyVideo = jQuery("<span/>").html(jQuery.mbYTPlayer.controls.onlyYT).addClass("mb_OnlyYT ytpicon").on("click",function () {jQuery(YTPlayer).fullscreen(data.realfullscreen);});
 
@@ -1034,8 +1034,8 @@ if(!jQuery.browser.mobile)return false;
 //srcをチェックして、サムネイルが存在しなければ、
 //代替画像を用意する等の処理は必要だと考えます。
 //e.g. var src = $('<img/>');src.src='THUMBNAIL.jpg';src.onload=function(){処理};
-//var src = 'http://img.youtube.com/vi/'+videoID+'/0.jpg';
-var src = 'http://img.youtube.com/vi/eQ-ru_8LbCc/0.jpg';
+//var src = 'https://img.youtube.com/vi/'+videoID+'/0.jpg';
+var src = '//img.youtube.com/vi/eQ-ru_8LbCc/0.jpg';
 //divオブジェクトを生成して、bodyに貼り付けます。
 var underlay = jQuery("<div/>").css({
 //ここは大事。divの背景としてサムネイル画像をセット
