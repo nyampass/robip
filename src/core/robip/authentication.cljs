@@ -19,6 +19,11 @@
        :children 
        [[label :label [:p "登録いただくことで、PC、スマホ間でプログラムを引き継ぐことができます"
                        [:br] "メールアドレスには保護者の方のアドレスを入れてください"]]
+        [:div
+         [:a {:href "/agreement.html" :target "_blank"} "個人情報の取扱い"]
+         "並びに"
+         [:a {:href "/privacypolicy.html" :target "_blank"} "利用規約"]
+         "に同意してRobipを利用します"]
         [:a.btn.btn-large.btn-facebook {:href (str "/login/facebook/"
                                                    (if (re-seq #"app.html" (.-pathname (.-location js/window)))
                                                      "app"
@@ -106,12 +111,17 @@
        "Robipへログイン！"]]
      [:div.modal-body
       [v-box
-       :children 
-       [[:a.btn.btn-large.btn-facebook {:href (str "/login/facebook/"
+       :children
+       [[:div
+         [:a {:href "/agreement.html" :target "_blank"} "個人情報の取扱い"]
+         "並びに"
+         [:a {:href "/privacypolicy.html" :target "_blank"} "利用規約"]
+         "に同意してRobipを利用します"]
+        [:a.btn.btn-large.btn-facebook {:href (str "/login/facebook/"
                                                    (if (re-seq #"app.html" (.-pathname (.-location js/window)))
                                                      "app"
                                                      "default"))}
-         [:i.fa.fa-facebook-official] " Facebookログイン"]        
+         [:i.fa.fa-facebook-official] " Facebookログイン"]
         [:button.btn.btn-link {:style {"color" "#23527c"}
                                :on-click (fn [e]
                                            (r/dispatch [:change-authentication-mode :signup]))}
